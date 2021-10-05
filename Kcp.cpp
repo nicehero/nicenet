@@ -1,15 +1,13 @@
 #include "Kcp.h"
 #include "Service.h"
-
 #include <asio/asio.hpp>
+#include <random>
 #include <micro-ecc/uECC.h>
 #include "Log.h"
 #include "Message.h"
 #include "Clock.h"
 #include <map>
-#include <asio/yield.hpp>
 #include <kcp/ikcp.h>
-#include <random>
 
 extern "C"
 {
@@ -737,7 +735,7 @@ public:
 			s->m_impl->m_endpoint,
 			[] (asio::error_code, std::size_t) {
 		});
-		delete buf2;
+		delete[] buf2;
 		return 0;
 	}
 

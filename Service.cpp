@@ -1,13 +1,14 @@
 #include "Service.h"
-#include <thread>
 #include <asio/asio.hpp>
 #include <random>
 
-asio::io_context nicehero::gService(1);
-asio::io_context nicehero::gMultiWorkerService(nicehero::WORK_THREAD_COUNT);
-asio::io_context nicehero::gWorkerServices[nicehero::WORK_THREAD_COUNT];
-asio::io_context nicehero::gDBServices[nicehero::DB_THREAD_COUNT];
-std::thread nicehero::gMainThread;
+namespace nicehero{
+	asio::io_context gService(1);
+	asio::io_context gMultiWorkerService(WORK_THREAD_COUNT);
+	asio::io_context gWorkerServices[WORK_THREAD_COUNT];
+	asio::io_context gDBServices[DB_THREAD_COUNT];
+	std::thread gMainThread;
+}
 static int checkCPUendian() {
 	union {
 		unsigned int a;
@@ -16,7 +17,8 @@ static int checkCPUendian() {
 	c.a = 1;
 	return (c.b == 1);
 
-}   /*return 1 : little-endian, return 0:big-endian*/
+}
+/*return 1 : little-endian, return 0:big-endian*/
 void nicehero::start(bool background)
 {
 	if (checkCPUendian() == 0)

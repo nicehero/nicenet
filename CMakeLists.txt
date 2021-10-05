@@ -21,15 +21,27 @@ INCLUDE_DIRECTORIES(
 	${PROJECT_SOURCE_DIR}/dep/include/asio
 )
 
+set(SRC2
+	"dep/include/micro-ecc/uECC.c"
+	"dep/include/tiny_sha3/sha3.c"
+	"dep/include/kcp/ikcp.c"
+)
+
 
 add_library(nicenet SHARED)
 
 add_definitions(-DASIO_STANDALONE)
 
-target_sources(nicenet PRIVATE
-	${SRC1}
-)
-
-target_link_libraries(nicenet PUBLIC ikcp sha3 uECC winmm ws2_32 mswsock)
+if (ANDROID)
+	target_sources(nicenet PRIVATE
+		${SRC1}
+		${SRC2}
+	)
+else()
+	target_sources(nicenet PRIVATE
+		${SRC1}
+	)
+	target_link_libraries(nicenet PUBLIC ikcp sha3 uECC winmm ws2_32 mswsock)
+endif()
 
 install(TARGETS nicenet DESTINATION ${PROJECT_SOURCE_DIR})

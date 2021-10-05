@@ -3,10 +3,6 @@
 
 #include <functional>
 
-namespace std
-{
-	class thread;
-};
 namespace asio
 {
 	class io_context;
@@ -27,7 +23,6 @@ namespace nicehero
 	extern asio::io_context gWorkerServices[nicehero::WORK_THREAD_COUNT];
 	extern asio::io_context gMultiWorkerService;
 	extern asio::io_context gDBServices[nicehero::DB_THREAD_COUNT];
-	extern std::thread gMainThread;
 	void start(bool background = false);
 	void stop();
 	void post(std::function<void()> f, ToService to = TO_MAIN);
