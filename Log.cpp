@@ -21,7 +21,7 @@ namespace nicehero
 		tm tm_now;
 		localtime_s(&tm_now, (time_t*)&now);
 		strftime(m_timebuf, sizeof(m_timebuf), "[%H:%M:%S]: ", &tm_now);
-		strncpy_s(LOGBUF, m_timebuf, TIMEBUF_LENGTH);
+		strncpy(LOGBUF, m_timebuf, TIMEBUF_LENGTH);
 #else
 		tm* tm_ = localtime((time_t*)&now);
 		strftime(m_timebuf, sizeof(m_timebuf), "[%H:%M:%S]: ", tm_);
@@ -43,7 +43,7 @@ namespace nicehero
 		tm tm_now;
 		localtime_s(&tm_now, (time_t*)&now);
 		strftime(m_timebuf, sizeof(m_timebuf), "[%H:%M:%S]: ", &tm_now);
-		strncpy_s(LOGBUF, m_timebuf, TIMEBUF_LENGTH);
+		strncpy(LOGBUF, m_timebuf, TIMEBUF_LENGTH);
 #else
 		tm* tm_ = localtime((time_t*)&now);
 		strftime(m_timebuf, sizeof(m_timebuf), "[%H:%M:%S]: ", tm_);

@@ -18,12 +18,18 @@ LINK_DIRECTORIES(
 
 INCLUDE_DIRECTORIES(
 	${PROJECT_SOURCE_DIR}/dep/include
+	${PROJECT_SOURCE_DIR}/dep/include/asio
 )
 
-target_link_libraries(ggpo PUBLIC ikcp sha3 uECC winmm ws2_32)
+
+add_library(nicenet SHARED)
+
+add_definitions(-DASIO_STANDALONE)
 
 target_sources(nicenet PRIVATE
 	${SRC1}
 )
 
-add_library(nicenet STATIC)
+target_link_libraries(nicenet PUBLIC ikcp sha3 uECC winmm ws2_32 mswsock)
+
+install(TARGETS nicenet DESTINATION ${PROJECT_SOURCE_DIR})

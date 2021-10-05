@@ -108,3 +108,8 @@ asio::io_context& nicehero::getDBService()
 	static thread_local std::default_random_engine e;
 	return gDBServices[e() % DB_THREAD_COUNT];
 }
+
+void nicehero::joinMain()
+{
+	gMainThread.join();
+}

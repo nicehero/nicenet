@@ -33,6 +33,8 @@ namespace nicehero
 	void post(std::function<void()> f, ToService to = TO_MAIN);
 	asio::io_context& getWorkerService();
 	asio::io_context& getDBService();
+	
+	void joinMain();
 }
 
 #endif

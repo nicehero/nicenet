@@ -30,7 +30,6 @@ namespace nicehero
 
 	int gettimeofday(struct timeval *tv, struct timezone *tz)
 	{
-		static bool tzflag;
 		LONGLONG now = systime();
 
 		tv->tv_sec = static_cast<time_t>(now / 1000000);
