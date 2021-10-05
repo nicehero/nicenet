@@ -1,0 +1,46 @@
+[
+
+{
+	"typeName" : "TestType",
+	"isMsg" : false,
+	"fields" : [
+		{
+			"name" :"myUi64",
+			"type" : "ui64",
+			"default" : 0
+		}
+	]
+}
+,{
+	"typeName" : "TestType2",
+	"isMsg" : false,
+	"fields" : [
+		{
+			"name" :"myString",
+			"type" : "string",
+			"default" : "aaa"
+		}
+		,{
+			"name" :"test",
+			"type" : "TestType"
+		}
+	]
+}
+,{
+	"typeName" : "TestAck",
+	"isMsg" : true,
+	"fields" : [
+		{
+			"name" :"code",
+			"type" : "Code"
+		}
+		,{
+			"name" :"test",
+			"type" : "ui64",
+			"condition" : "code.value == 0",
+			"default" : 0
+		}
+	]
+}
+
+]

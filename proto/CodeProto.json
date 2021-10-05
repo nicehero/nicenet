@@ -1,0 +1,23 @@
+[
+
+{
+	"typeName" : "Code",
+	"isMsg" : false,
+	"fields" : [
+		{
+			"name" :"value",
+			"type" : "ui32",
+			"default" : 1
+		}
+		,{
+			"name" :"file",
+			"type" : "string"
+		}
+		,{
+			"name" :"line",
+			"type" : "ui32"
+		}
+	]
+}
+
+]

@@ -1,0 +1,44 @@
+[
+
+{
+	"typeName" : "TestType3",
+	"isMsg" : true,
+	"fields" : [
+		{
+			"name" :"test",
+			"type" : "<TestType2"
+		}
+		,{
+			"name" :"myBinary",
+			"type" : "binary"
+		}
+		,{
+			"name" :"operNum",
+			"type" : "OperUInt",
+			"default" : 0
+		}
+		,{
+			"name" :"storeNum",
+			"type" : "StoreUInt",
+			"default" : 0
+		}
+		,{
+			"name" :"myNum",
+			"type" : "ui64",
+			"default" : 0
+		}
+
+	]
+},
+{
+	"typeName" : "TestType4",
+	"isMsg" : true,
+	"fields" : [
+		{
+			"name" :"test",
+			"type" : "TestType"
+		}
+	]
+}
+
+]
