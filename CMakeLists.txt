@@ -37,11 +37,16 @@ if (ANDROID)
 		${SRC1}
 		${SRC2}
 	)
-else()
+else(WIN32)
 	target_sources(nicenet PRIVATE
 		${SRC1}
 	)
 	target_link_libraries(nicenet PUBLIC ikcp sha3 uECC winmm ws2_32 mswsock)
+else()
+	target_sources(nicenet PRIVATE
+		${SRC1}
+	)
+	target_link_libraries(nicenet PUBLIC ikcp sha3 uECC)
 endif()
 
 install(TARGETS nicenet DESTINATION ${PROJECT_SOURCE_DIR})
