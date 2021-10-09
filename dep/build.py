@@ -49,10 +49,10 @@ else:
 do_os("rm -rf sha3.o")
 
 print ('download kcp')
-do_os("wget https://github.com/skywind3000/kcp/archive/1.3.tar.gz")
-do_os("tar xvf 1.3.tar.gz")
-do_os("mv kcp-1.3 include/kcp")
-do_os("rm -rf 1.3.tar.gz")
+do_os("wget https://github.com/skywind3000/kcp/archive/refs/tags/1.7.tar.gz")
+do_os("tar xvf 1.7.tar.gz")
+do_os("mv kcp-1.7 include/kcp")
+do_os("rm -rf 1.7.tar.gz")
 print ('build kcp')
 if os.name == "nt":
 	body = open("include/kcp/ikcp.c","rb").read().decode()
