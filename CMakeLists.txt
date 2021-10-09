@@ -37,7 +37,7 @@ if (ANDROID)
 		${SRC1}
 		${SRC2}
 	)
-else if(WIN32)
+elseif(WIN32)
 	target_sources(nicenet PRIVATE
 		${SRC1}
 	)
