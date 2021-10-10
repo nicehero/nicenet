@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.14)
+cmake_minimum_required(VERSION 3.1)
 
 # TODO: SDK Versioning.
 project(nicenet VERSION 1.0.0)
