@@ -1,0 +1,8 @@
+/*.a
+/*.dll
+/*.lib
+/*.so
+/build/
+/dep/include/
+/dep/lib/
+/dep/done
