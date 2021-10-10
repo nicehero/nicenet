@@ -3,8 +3,6 @@ def do_os(cmd):
 	b = os.system(cmd)
 	if b != 0:
 		exit(1)
-do_os('rm -rf include')
-do_os('rm -rf lib')
 
 do_os('mkdir include')
 do_os('mkdir lib')

@@ -1,0 +1,2 @@
+g++ -g -Wall -I./dep/include -I./dep/include/asio -L./dep/lib -L./ -DASIO_STANDALONE mongoBenchmark.cpp TestProtocolCmd.cpp -lnicenet -lpthread -lsha3 -luECC -lmongoc-static-1.0 -lbson-static-1.0 -ldnsapi -lbcrypt -lsecur32 -lcrypt32 -lz -lwinmm -lws2_32 -lmswsock -o mongoBenchmark -Wl,-rpath=dep/lib
+PAUSE
