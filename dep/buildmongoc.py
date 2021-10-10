@@ -3,6 +3,10 @@ def do_os(cmd):
 	b = os.system(cmd)
 	if b != 0:
 		exit(1)
+if not os.path.exists('include'):
+	os.mkdir('include')
+if not os.path.exists('lib'):
+	os.mkdir('lib')
 print ('download mongo-c') #mongo-c-driver-1.14.0.tar.gz
 do_os("wget https://gitee.com/nicehero/mongo-c-driver/attach_files/848515/download/mongo-c-driver-1.14.0.tar.gz")
 print ('build mongoc')

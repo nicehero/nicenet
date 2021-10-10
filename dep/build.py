@@ -3,9 +3,13 @@ def do_os(cmd):
 	b = os.system(cmd)
 	if b != 0:
 		exit(1)
-
-do_os('mkdir include')
-do_os('mkdir lib')
+if os.path.isfile('done'):
+	print('done')
+	exit()
+if not os.path.exists('include'):
+	os.mkdir('include')
+if not os.path.exists('lib'):
+	os.mkdir('lib')
 print ('download micro-ecc')
 
 do_os("wget https://gitee.com/nicehero/micro-ecc/attach_files/848500/download/micro-ecc-1.0.tar.gz")
