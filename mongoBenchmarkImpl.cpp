@@ -117,7 +117,7 @@ int benchmark(int threadNum, const char* db, const char* tablename)
 	std::shared_ptr<nicehero::MongoConnectionPool> pool = std::make_shared<nicehero::MongoConnectionPool>();
 	pool->init(db, "benchmark");
 	benchmark_insert(threadNum,pool,tablename);
-	nicehero::gMainThread.join();
+	nicehero::joinMain();
 	return 0;
 }
 
