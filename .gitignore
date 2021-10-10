@@ -1,8 +1,13 @@
+*
+!/**/
+!*.*
 /*.a
 /*.dll
 /*.lib
 /*.so
+/*.exe
 /build/
 /dep/include/
 /dep/lib/
 /dep/done
+/ndkBuild/
