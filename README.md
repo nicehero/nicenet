@@ -8,9 +8,11 @@ cd dep
 
 python build.py
 
-#if u need mongodb run
+#if u need run mongodb
 
 #python buildmongoc.py
+
+cd ..
 
 mkdir build
 
