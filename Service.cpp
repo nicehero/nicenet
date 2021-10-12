@@ -118,5 +118,17 @@ asio::io_context& nicehero::getDBService()
 
 void nicehero::joinMain()
 {
+	asio::signal_set s(gService);
+	s.add(SIGINT);
+	s.add(SIGTERM);
+#if defined(SIGQUIT)
+	s.add(SIGQUIT);
+#endif
+	s.async_wait([] (asio::error_code ec, int signal){
+		printf("signal:%d\n", signal);
+		nicehero::post([] {
+			nicehero::stop();
+		});
+	});
 	gMainThread.join();
 }
