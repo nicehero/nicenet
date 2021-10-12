@@ -116,11 +116,35 @@ asio::io_context& nicehero::getDBService()
 	return gDBServices[e() % DB_THREAD_COUNT];
 }
 
+#ifdef WIN32
+static BOOL WINAPI handleWin32Console(DWORD event)
+{
+	switch (event)
+	{
+	case CTRL_CLOSE_EVENT:
+	case CTRL_C_EVENT:
+	{
+		printf("handle end\n");
+		nicehero::stop();
+	}
+
+	return TRUE;
+	}
+	return FALSE;
+}
+#endif
+
 void nicehero::joinMain()
 {
 	asio::signal_set s(gService);
 	s.add(SIGINT);
 	s.add(SIGTERM);
+#if defined(SIGQUIT)
+	s.add(SIGBREAK);
+#endif
+#if defined(SIGABRT)
+	s.add(SIGABRT);
+#endif
 #if defined(SIGQUIT)
 	s.add(SIGQUIT);
 #endif
@@ -130,5 +154,11 @@ void nicehero::joinMain()
 			nicehero::stop();
 		});
 	});
+#ifdef WIN32
+	if (!SetConsoleCtrlHandler(handleWin32Console, TRUE))
+	{
+		fprintf(stderr, "error setting event handler.\n");
+	}
+#endif
 	gMainThread.join();
 }
