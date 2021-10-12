@@ -70,6 +70,11 @@ void nicehero::stop()
 	{
 		gWorkerServices[i].stop();
 	}
+	gMultiWorkerService.stop();
+	for (int i = 0; i < DB_THREAD_COUNT; ++i)
+	{
+		gDBServices[i].stop();
+	}
 }
 
 void nicehero::post(std::function<void()> f, ToService to)
