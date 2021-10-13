@@ -129,8 +129,8 @@ namespace nicehero \
 	template <>		\
 	T * Module<T>::getInstance() \
 	{				\
-		if (!m_instance)\
-		{m_instance = new T();}\
+		static T g_instance;\
+		m_instance = &g_instance;\
 		return m_instance;	\
 	}\
 }\

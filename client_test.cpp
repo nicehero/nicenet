@@ -32,12 +32,22 @@ int main(int argc, char* argv[])
 	{
 		serverIP = argv[1];
 	}
+#if defined(_DEBUG)
+	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
+#endif
 
 	nicehero::start(true);
 	std::vector<std::shared_ptr<MyClient> > cs;
 	kcpc = std::make_shared<MyKcpClient>();
 	kcpc->connect(serverIP, 7001);
 	kcpc->init();
+	if (!kcpc->m_isInit)
+	{
+		nicehero::stop();
+		Sleep(1000);
+		nicehero::joinMain();
+		return 0;
+	}
 	kcpc->startRead();
 	std::shared_ptr<asio::steady_timer> t = std::make_shared<asio::steady_timer>(nicehero::gService);
 	t->expires_from_now(std::chrono::seconds(1));
