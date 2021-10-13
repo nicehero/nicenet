@@ -139,7 +139,7 @@ void nicehero::joinMain()
 	asio::signal_set s(gService);
 	s.add(SIGINT);
 	s.add(SIGTERM);
-#if defined(SIGQUIT)
+#if defined(SIGBREAK)
 	s.add(SIGBREAK);
 #endif
 #if defined(SIGABRT)
