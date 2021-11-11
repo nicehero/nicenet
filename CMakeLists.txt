@@ -25,6 +25,7 @@ set(SRC2
 	"dep/include/micro-ecc/uECC.c"
 	"dep/include/tiny_sha3/sha3.c"
 	"dep/include/kcp/ikcp.c"
+	"jni.cpp"
 )
 
 
