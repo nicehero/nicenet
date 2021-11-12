@@ -7,13 +7,15 @@
 #include "CopyablePtr.hpp"
 #include <functional>
 #include <unordered_map>
+#include "Server.h"
+
 namespace nicehero
 {
 	class HttpConnection;
 	class HttpServerImpl;
 	class HttpRequest;
 	class HttpResponse;
-	using HttpHandler = std::function<void(CopyablePtr<HttpRequest> req, CopyablePtr<HttpResponse> res)>;
+	using HttpHandler = std::function<AwaitableRet(CopyablePtr<HttpRequest> req, CopyablePtr<HttpResponse> res)>;
 	class HttpServer
 		:public NoCopy
 	{
@@ -57,6 +59,10 @@ namespace nicehero
 
 
 }
-#define HTTP_HANDLER_PARAMS (nicehero::CopyablePtr<nicehero::HttpRequest> req, nicehero::CopyablePtr<nicehero::HttpResponse> res)
+#ifdef _RESUMABLE_FUNCTIONS_SUPPORTED
+#define HTTP_HANDLER_PARAMS (nicehero::CopyablePtr<nicehero::HttpRequest> req, nicehero::CopyablePtr<nicehero::HttpResponse> res)->nicehero::AwaitableRet
+#else
+#define HTTP_HANDLER_PARAMS (nicehero::CopyablePtr<nicehero::HttpRequest> req, nicehero::CopyablePtr<nicehero::HttpResponse> res) 
+#endif
 #endif
 

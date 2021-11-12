@@ -4,7 +4,9 @@
 #include "Type.h"
 #include <string>
 #include "NoCopy.h"
-
+#ifdef _RESUMABLE_FUNCTIONS_SUPPORTED
+# include <experimental/coroutine>
+#endif
 namespace nicehero
 {
 	const ui32 PUBLIC_KEY_SIZE = 64;
@@ -26,6 +28,35 @@ namespace nicehero
 	private:
 
 	};
+
+#ifdef _RESUMABLE_FUNCTIONS_SUPPORTED
+	struct AwaitableRet
+	{
+		struct promise_type {
+			auto get_return_object() { return AwaitableRet(true); }
+			auto initial_suspend() { return std::experimental::suspend_never{}; }
+			auto final_suspend() { return std::experimental::suspend_never{}; }
+			//void unhandled_exception() { std::terminate(); }
+			//void return_void() {}
+		};
+		bool ret;
+		AwaitableRet(bool r) :ret(r) {}
+		AwaitableRet() :ret(true) {}
+	};
+	struct VAwaitableRet
+	{
+		struct promise_type {
+			auto get_return_object() { return VAwaitableRet(); }
+			auto initial_suspend() { return std::experimental::suspend_never{}; }
+			auto final_suspend() { return std::experimental::suspend_never{}; }
+			void unhandled_exception() { std::terminate(); }
+			void return_void() {}
+		};
+	};
+#else
+	using AwaitableRet = bool;
+	using VAwaitableRet = void;
+#endif
 }
 
 #endif

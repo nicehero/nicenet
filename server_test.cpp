@@ -50,6 +50,36 @@ nicehero::KcpSessionS* MyKcpServer::createSession()
 }
 
 
+using call_back = std::function<void(int)>;
+void syncGetX(int init, call_back f) // 异步调用
+{
+	nicehero::post([init, f]() {
+		f(init + 5);
+	});
+}
+#ifdef _RESUMABLE_FUNCTIONS_SUPPORTED
+struct GetXWaitable
+{
+	GetXWaitable(int init) :init_(init) {}
+	bool await_ready() const { return false; }
+	int await_resume() { return result_; }
+	void await_suspend(std::experimental::coroutine_handle<> handle)
+	{
+		auto f = [handle, this](int value) mutable {
+			result_ = value;
+			handle.resume();
+		};
+		syncGetX(init_, f); // 调用原来的异步调用
+	}
+	int init_;
+	int result_;
+};
+#endif
+nicehero::AwaitableRet func33()
+{
+	return true;
+}
+
 int main(int argc, char* argv[])
 {
 	bool v6 = (argc > 1 && std::string(argv[1]) == "v6") ? true : false;
@@ -61,7 +91,16 @@ int main(int argc, char* argv[])
 	}
 	nicehero::HttpServer httpServer(listenIP,8080);
 	httpServer.addHandler("/", [] HTTP_HANDLER_PARAMS{
-		res->write("hello world");
+		res->write("hello world:");
+#ifdef _RESUMABLE_FUNCTIONS_SUPPORTED
+		int r = co_await GetXWaitable(1);
+		r += co_await GetXWaitable(1);
+		std::stringstream ss;
+		ss << r;
+		res->write(ss.str());
+#else
+		return true;
+#endif
 	});
 	httpServer.start();
 	MyServer tcpServer(listenIP, 7000);

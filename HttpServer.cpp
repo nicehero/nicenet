@@ -10,7 +10,8 @@ namespace nicehero
 	{
 	public:
 		HttpConnection()
-			:m_socket(getWorkerService()) {
+			:m_iocontext(getWorkerService())
+			,m_socket(m_iocontext) {
 			m_IsSending = false;
 		}
 		void start()
@@ -122,6 +123,7 @@ namespace nicehero
 			});
 		}
 		nicehero::HttpRequestParser m_parser;
+		asio::io_context& m_iocontext;
 		asio::ip::tcp::socket m_socket;
 		HttpServer* m_Server;
 		std::vector<char> m_buffer;
@@ -246,7 +248,7 @@ namespace nicehero
 			auto conn = m_Connection;
 			auto ret = inspect();
 			//nlog(ret.c_str());
-			m_Connection->m_socket.get_io_context().post([conn,ret] {
+			m_Connection->m_iocontext.post([conn,ret] {
 				conn->m_sendBuffers.push_back(std::move(ret));
 				if (!conn->m_IsSending)
 				{

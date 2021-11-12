@@ -13,11 +13,13 @@
 #include <functional>
 #include "CopyablePtr.hpp"
 
+
+
 namespace nicehero
 {
 	class TcpSession;
 	using tcpuid = std::string;
-	using tcpcommand = bool(*)(TcpSession&, Message&);
+	using tcpcommand = AwaitableRet(*)(TcpSession&, Message&);
 	//typedef std::function<bool(TcpSession&, Message&)> tcpcommand;
 	class TcpServer;
 	class TcpSessionImpl;
@@ -128,12 +130,18 @@ namespace nicehero
 	}
 
 }
-
+#ifndef _RESUMABLE_FUNCTIONS_SUPPORTED
 #define TCP_SESSION_COMMAND(CLASS,COMMAND) \
 static bool _##CLASS##_##COMMAND##FUNC(nicehero::TcpSession& session, nicehero::Message& msg);\
 static nicehero::TcpSessionCommand _##CLASS##_##COMMAND(typeid(CLASS), COMMAND, _##CLASS##_##COMMAND##FUNC);\
 static bool _##CLASS##_##COMMAND##FUNC(nicehero::TcpSession& session, nicehero::Message& msg)
+#else
 
+#define TCP_SESSION_COMMAND(CLASS,COMMAND) \
+static nicehero::AwaitableRet _##CLASS##_##COMMAND##FUNC(nicehero::TcpSession& session, nicehero::Message& msg);\
+static nicehero::TcpSessionCommand _##CLASS##_##COMMAND(typeid(CLASS), COMMAND, _##CLASS##_##COMMAND##FUNC);\
+static nicehero::AwaitableRet _##CLASS##_##COMMAND##FUNC(nicehero::TcpSession& session, nicehero::Message& msg)
+#endif
 
 #ifndef SESSION_COMMAND
 #define SESSION_COMMAND TCP_SESSION_COMMAND

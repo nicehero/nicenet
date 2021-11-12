@@ -24,10 +24,11 @@ namespace nicehero
 	{
 	public:
 		TcpSessionImpl(TcpSession& session)
-			:m_socket(getWorkerService()),m_session(session)
+			:m_iocontext(getWorkerService()),m_socket(m_iocontext),m_session(session)
 		{
 
 		}
+		asio::io_context& m_iocontext;
 		asio::ip::tcp::socket m_socket;
 		TcpSession& m_session;
 	};
@@ -441,7 +442,7 @@ public:
 		auto self(shared_from_this());
 		std::shared_ptr<Message> msg_ = std::make_shared<Message>();
 		msg_->swap(msg);
-		m_impl->m_socket.get_io_service().post([this,self, msg_] {
+		m_impl->m_iocontext.post([this,self, msg_] {
 			//same thread ,no need lock
 			m_SendList.emplace_back();
 			m_SendList.back().swap(*msg_);
