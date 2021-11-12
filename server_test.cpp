@@ -57,7 +57,7 @@ void syncGetX(int init, call_back f) // Òì²½µ÷ÓÃ
 		f(init + 5);
 	});
 }
-#ifdef _RESUMABLE_FUNCTIONS_SUPPORTED
+#ifdef NICE_HAS_CO_AWAIT
 struct GetXWaitable
 {
 	GetXWaitable(int init) :init_(init) {}
@@ -92,7 +92,7 @@ int main(int argc, char* argv[])
 	nicehero::HttpServer httpServer(listenIP,8080);
 	httpServer.addHandler("/", [] HTTP_HANDLER_PARAMS{
 		res->write("hello world:");
-#ifdef _RESUMABLE_FUNCTIONS_SUPPORTED
+#ifdef NICE_HAS_CO_AWAIT
 		int r = co_await GetXWaitable(1);
 		r += co_await GetXWaitable(1);
 		std::stringstream ss;

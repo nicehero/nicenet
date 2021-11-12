@@ -4,7 +4,7 @@
 #include "Type.h"
 #include <string>
 #include "NoCopy.h"
-#ifdef _RESUMABLE_FUNCTIONS_SUPPORTED
+#ifdef NICE_HAS_CO_AWAIT
 # include <experimental/coroutine>
 #endif
 namespace nicehero
@@ -29,7 +29,7 @@ namespace nicehero
 
 	};
 
-#ifdef _RESUMABLE_FUNCTIONS_SUPPORTED
+#ifdef NICE_HAS_CO_AWAIT
 	struct AwaitableRet
 	{
 		struct promise_type {

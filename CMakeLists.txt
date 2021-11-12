@@ -34,6 +34,7 @@ add_library(nicenet SHARED)
 add_definitions(-DASIO_STANDALONE)
 
 if (ANDROID)
+	#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++2a -fcoroutines-ts")
 	target_sources(nicenet PRIVATE
 		${SRC1}
 		${SRC2}

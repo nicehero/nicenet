@@ -130,7 +130,7 @@ namespace nicehero
 	}
 
 }
-#ifndef _RESUMABLE_FUNCTIONS_SUPPORTED
+#ifndef NICE_HAS_CO_AWAIT
 #define TCP_SESSION_COMMAND(CLASS,COMMAND) \
 static bool _##CLASS##_##COMMAND##FUNC(nicehero::TcpSession& session, nicehero::Message& msg);\
 static nicehero::TcpSessionCommand _##CLASS##_##COMMAND(typeid(CLASS), COMMAND, _##CLASS##_##COMMAND##FUNC);\

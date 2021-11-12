@@ -59,7 +59,7 @@ namespace nicehero
 
 
 }
-#ifdef _RESUMABLE_FUNCTIONS_SUPPORTED
+#ifdef NICE_HAS_CO_AWAIT
 #define HTTP_HANDLER_PARAMS (nicehero::CopyablePtr<nicehero::HttpRequest> req, nicehero::CopyablePtr<nicehero::HttpResponse> res)->nicehero::AwaitableRet
 #else
 #define HTTP_HANDLER_PARAMS (nicehero::CopyablePtr<nicehero::HttpRequest> req, nicehero::CopyablePtr<nicehero::HttpResponse> res) 
