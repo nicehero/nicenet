@@ -5,7 +5,7 @@
 #include <string>
 #include "NoCopy.h"
 #ifdef NICE_HAS_CO_AWAIT
-#ifndef __clang__
+#if !__has_include(<experimental/coroutine>)
 #include <coroutine>
 #else
 #include <experimental/coroutine>
@@ -38,7 +38,7 @@ namespace nicehero
 	{
 		struct promise_type {
 			auto get_return_object() { return AwaitableRet(true); }
-#ifndef __clang__
+#if !__has_include(<experimental/coroutine>)
 			auto initial_suspend() { return std::suspend_never{}; }
 			auto final_suspend() noexcept { return std::suspend_never{}; }
 #else
@@ -58,7 +58,7 @@ namespace nicehero
 	{
 		struct promise_type {
 			auto get_return_object() { return VAwaitableRet(); }
-#ifndef __clang__
+#if !__has_include(<experimental/coroutine>)
 			auto initial_suspend() { return std::suspend_never{}; }
 			auto final_suspend() { return std::suspend_never{}; }
 #else

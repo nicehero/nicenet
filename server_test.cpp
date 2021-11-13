@@ -124,7 +124,6 @@ int main(int argc, char* argv[])
 				, NBSON("_id", BCON_INT32(1))
 				, nicehero::Bson::createBsonPtr());
 			nlog("co_await nicehero::MongoPoolFindAsync ok");
-			auto t2 = tt;
 			while (auto bobj = cursor->fetch()) {
 				res->write(bobj->toJson());
 			}

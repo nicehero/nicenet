@@ -31,7 +31,7 @@ namespace nicehero
 	
 	void joinMain();
 }
-#ifndef __clang__
+#if !__has_include(<experimental/coroutine>)
 #define STDCORO std
 #else
 #define STDCORO std::experimental
