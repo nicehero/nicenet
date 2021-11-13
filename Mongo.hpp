@@ -19,6 +19,7 @@ namespace nicehero
 	{
 		friend class MongoClient;
 		friend class MongoConnectionPool;
+		friend class MongoPoolFindAsync;
 	protected:
 		MongoCursor(int err, mongoc_cursor_t* cursor = nullptr);
 	public:

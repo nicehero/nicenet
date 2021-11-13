@@ -141,7 +141,7 @@ public:
 		{
 			s->async_receive_from(asio::buffer(const_cast<char *>(buffer->c_str()), buffer->length())
 				, *senderEndpoint,
-				[=](asio::error_code ec, std::size_t bytesRecvd)
+				[buffer,senderEndpoint,s,this](asio::error_code ec, std::size_t bytesRecvd)
 			{
 				if (buffer->c_str()[0] == 1 && bytesRecvd == 1)
 				{
@@ -934,7 +934,7 @@ public:
 	void KcpSessionC::startRead2()
 	{
 		m_impl->m_socket->async_receive(asio::buffer(const_cast<char *>(m_buffer->c_str()), m_buffer->length())
-			, [=](asio::error_code ec, std::size_t bytesRecvd)
+			, [this](asio::error_code ec, std::size_t bytesRecvd)
 		{
 			if (m_buffer->c_str()[0] == 3 && bytesRecvd >= IKCP_OVERHEAD)
 			{

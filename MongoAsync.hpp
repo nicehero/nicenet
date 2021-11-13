@@ -32,6 +32,9 @@ namespace nicehero
 
 	inline MongoCursorPtr MongoPoolFindAsync::execute()
 	{
+		if (!m_pool){
+			return MongoCursorPtr(new MongoCursor(2));
+		}
 		return m_pool->find(m_collection, *m_query, *m_opt, m_readMode);
 	}
 

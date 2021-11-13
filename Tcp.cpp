@@ -13,6 +13,7 @@ extern "C"
 	extern void *sha3(const void *in, size_t inlen, void *md, int mdlen);
 }
 
+
 namespace nicehero
 {
 	TcpMessageParser& getTcpMessagerParse(const std::type_info& typeInfo)
@@ -268,7 +269,7 @@ public:
 	{
 		auto self(shared_from_this());
 		this->m_impl->m_socket.async_wait(asio::ip::tcp::socket::wait_read,
-			[=](std::error_code ec) {
+			[self,this](std::error_code ec) {
 			if (ec)
 			{
 				self->removeSelf();

@@ -31,12 +31,16 @@ namespace nicehero
 	
 	void joinMain();
 }
-
+#ifndef __clang__
+#define STDCORO std
+#else
+#define STDCORO std::experimental
+#endif
 #define IMPL_AWAITABLE_FULL(DO_SERVICE,TO_SERVICE) \
 	using call_back = std::function<void()>;\
 	bool await_ready() const { return false; }\
 	RetType await_resume() { return std::move(result_); }\
-	void await_suspend(std::experimental::coroutine_handle<> handle) {\
+	void await_suspend(STDCORO::coroutine_handle<> handle) {\
 		nicehero::post([handle, this]() {\
 			result_ = execute();\
 			if (DO_SERVICE != TO_SERVICE)nicehero::post([handle,this]{ handle.resume(); },TO_SERVICE);\
@@ -45,7 +49,6 @@ namespace nicehero
 	}\
 	RetType execute();\
 	RetType result_;
-
 #define IMPL_AWAITABLE(DO_SERVICE) \
 	IMPL_AWAITABLE_FULL(DO_SERVICE,nicehero::TO_MAIN)
 #endif

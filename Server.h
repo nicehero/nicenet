@@ -5,7 +5,11 @@
 #include <string>
 #include "NoCopy.h"
 #ifdef NICE_HAS_CO_AWAIT
-# include <experimental/coroutine>
+#ifndef __clang__
+#include <coroutine>
+#else
+#include <experimental/coroutine>
+#endif
 #endif
 namespace nicehero
 {
@@ -34,9 +38,14 @@ namespace nicehero
 	{
 		struct promise_type {
 			auto get_return_object() { return AwaitableRet(true); }
+#ifndef __clang__
+			auto initial_suspend() { return std::suspend_never{}; }
+			auto final_suspend() noexcept { return std::suspend_never{}; }
+#else
 			auto initial_suspend() { return std::experimental::suspend_never{}; }
-			auto final_suspend() { return std::experimental::suspend_never{}; }
-			//void unhandled_exception() { std::terminate(); }
+			auto final_suspend() noexcept { return std::experimental::suspend_never{}; }
+#endif
+			void unhandled_exception() { std::terminate(); }
 			//void return_void() {}
 			void return_value(bool value) { _return_value = value; }
 			bool _return_value;
@@ -49,8 +58,13 @@ namespace nicehero
 	{
 		struct promise_type {
 			auto get_return_object() { return VAwaitableRet(); }
+#ifndef __clang__
+			auto initial_suspend() { return std::suspend_never{}; }
+			auto final_suspend() { return std::suspend_never{}; }
+#else
 			auto initial_suspend() { return std::experimental::suspend_never{}; }
 			auto final_suspend() { return std::experimental::suspend_never{}; }
+#endif
 			void unhandled_exception() { std::terminate(); }
 			void return_void() {}
 		};

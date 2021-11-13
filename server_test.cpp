@@ -94,6 +94,9 @@ int main(int argc, char* argv[])
 #ifdef NICE_HAS_CO_AWAIT
 	std::shared_ptr<nicehero::MongoConnectionPool> pool = std::make_shared<nicehero::MongoConnectionPool>();
 	bool r = pool->init("mongodb://192.168.9.5:27018", "test");
+	if (!r){
+		pool = std::shared_ptr<nicehero::MongoConnectionPool>();
+	}
 #else
 	int pool = 0;
 #endif
@@ -109,7 +112,7 @@ int main(int argc, char* argv[])
 #ifdef NICE_HAS_CO_AWAIT
 			int r = 0;
 			if (r > 2) {
-				return true;
+				co_return true;
 			}
 			TempObj tt;
 			auto nPool = pool;
@@ -126,13 +129,13 @@ int main(int argc, char* argv[])
 				res->write(bobj->toJson());
 			}
 			if (r > 2) {
-				return true;
+				co_return true;
 			}
 			std::stringstream ss;
 			ss << r;
 			res->write(ss.str());
 			r += co_await async_add(1);
-			return true;
+			co_return true;
 #else
 			return true;
 #endif
@@ -166,7 +169,7 @@ TCP_SESSION_COMMAND(MyClient, XDataID)
 	nlog("tcp recv XData size:%d,%s", int(msg.getSize()),s.c_str());
 	MyClient& client = (MyClient&)session;
 	client.sendMessage(d);
-	return true;
+	co_return true;
 }
 
 TCP_SESSION_COMMAND(MyClient, 101)
@@ -178,7 +181,7 @@ TCP_SESSION_COMMAND(MyClient, 101)
 	int r = co_await async_add(1);
 	r += 1;
 #endif
-	return true;
+	co_return true;
 }
 static int numClients = 0;
 

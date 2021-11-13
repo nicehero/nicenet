@@ -40,6 +40,7 @@ if (ANDROID)
 		${SRC2}
 	)
 elseif(WIN32)
+	#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++20 -fcoroutines")
 	target_sources(nicenet PRIVATE
 		${SRC1}
 	)
