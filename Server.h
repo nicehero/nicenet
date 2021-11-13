@@ -38,6 +38,8 @@ namespace nicehero
 			auto final_suspend() { return std::experimental::suspend_never{}; }
 			//void unhandled_exception() { std::terminate(); }
 			//void return_void() {}
+			void return_value(bool value) { _return_value = value; }
+			bool _return_value;
 		};
 		bool ret;
 		AwaitableRet(bool r) :ret(r) {}

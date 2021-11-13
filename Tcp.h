@@ -136,7 +136,6 @@ static bool _##CLASS##_##COMMAND##FUNC(nicehero::TcpSession& session, nicehero::
 static nicehero::TcpSessionCommand _##CLASS##_##COMMAND(typeid(CLASS), COMMAND, _##CLASS##_##COMMAND##FUNC);\
 static bool _##CLASS##_##COMMAND##FUNC(nicehero::TcpSession& session, nicehero::Message& msg)
 #else
-
 #define TCP_SESSION_COMMAND(CLASS,COMMAND) \
 static nicehero::AwaitableRet _##CLASS##_##COMMAND##FUNC(nicehero::TcpSession& session, nicehero::Message& msg);\
 static nicehero::TcpSessionCommand _##CLASS##_##COMMAND(typeid(CLASS), COMMAND, _##CLASS##_##COMMAND##FUNC);\

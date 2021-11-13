@@ -32,4 +32,20 @@ namespace nicehero
 	void joinMain();
 }
 
+#define IMPL_AWAITABLE_FULL(DO_SERVICE,TO_SERVICE) \
+	using call_back = std::function<void()>;\
+	bool await_ready() const { return false; }\
+	RetType await_resume() { return std::move(result_); }\
+	void await_suspend(std::experimental::coroutine_handle<> handle) {\
+		nicehero::post([handle, this]() {\
+			result_ = execute();\
+			if (DO_SERVICE != TO_SERVICE)nicehero::post([handle,this]{ handle.resume(); },TO_SERVICE);\
+			else handle.resume();\
+		}, DO_SERVICE);\
+	}\
+	RetType execute();\
+	RetType result_;
+
+#define IMPL_AWAITABLE(DO_SERVICE) \
+	IMPL_AWAITABLE_FULL(DO_SERVICE,nicehero::TO_MAIN)
 #endif

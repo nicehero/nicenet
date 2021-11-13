@@ -349,7 +349,7 @@ public:
 
 #if !defined(NICE_HAS_CO_AWAIT)
 # if !defined(NICE_DISABLE_CO_AWAIT)
-#  if defined(NICE_MSVC)
+#  if defined(_MSC_VER)
 #   if (_MSC_VER >= 1928) && (_MSVC_LANG >= 201705) && !defined(__clang__)
 #    define NICE_HAS_CO_AWAIT 1
 #   elif (_MSC_FULL_VER >= 190023506)

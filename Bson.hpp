@@ -166,6 +166,18 @@ namespace nicehero
 			}
 			return 0.0;
 		}
+
+		std::string toJson()
+		{
+			if (!m_bson) {
+				return "";
+			}
+			auto r = bson_as_json(m_bson, nullptr);
+			auto rr = std::string(r);
+			bson_free(r);
+			return rr;
+		}
+
 		bson_t* m_bson = nullptr;
 
 		static BsonPtr createBsonPtr()

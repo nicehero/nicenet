@@ -48,7 +48,11 @@ namespace nicehero {
 		// If you want these you're probably doing it wrong, though they'd be
 		// easy enough to implement
 		CopyablePtr& operator=(CopyablePtr const&) = delete;
-		CopyablePtr& operator=(CopyablePtr&&) = delete;
+		CopyablePtr& operator=(CopyablePtr&& other) {
+			value.release();
+			value = std::move(other.value);
+			return *this;
+		}
 
 	private:
 		mutable std::unique_ptr<T> value;

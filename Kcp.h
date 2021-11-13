@@ -20,7 +20,7 @@ namespace nicehero
 
 	class KcpSession;
 	using kcpuid = std::string;
-	using kcpcommand = bool(*)(KcpSession&, Message&);
+	using kcpcommand = AwaitableRet(*)(KcpSession&, Message&);
 
 	class KcpServer;
 	class KcpSessionImpl;
@@ -154,12 +154,18 @@ namespace nicehero
 
 }
 
+#ifndef NICE_HAS_CO_AWAIT
 
 #define KCP_SESSION_COMMAND(CLASS,COMMAND) \
 static bool _##CLASS##_##COMMAND##FUNC(nicehero::KcpSession& session, nicehero::Message& msg);\
 static nicehero::KcpSessionCommand _##CLASS##_##COMMAND(typeid(CLASS), COMMAND, _##CLASS##_##COMMAND##FUNC);\
 static bool _##CLASS##_##COMMAND##FUNC(nicehero::KcpSession& session, nicehero::Message& msg)
-
+#else
+#define KCP_SESSION_COMMAND(CLASS,COMMAND) \
+static nicehero::AwaitableRet _##CLASS##_##COMMAND##FUNC(nicehero::KcpSession& session, nicehero::Message& msg); \
+static nicehero::KcpSessionCommand _##CLASS##_##COMMAND(typeid(CLASS), COMMAND, _##CLASS##_##COMMAND##FUNC);\
+static nicehero::AwaitableRet _##CLASS##_##COMMAND##FUNC(nicehero::KcpSession& session, nicehero::Message& msg)
+#endif
 
 #ifndef SESSION_COMMAND
 #define SESSION_COMMAND TCP_SESSION_COMMAND
