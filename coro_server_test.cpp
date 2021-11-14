@@ -118,7 +118,7 @@ int main(int argc, char* argv[])
 	nicehero::start(true);
 #ifdef NICE_HAS_CO_AWAIT
 	std::shared_ptr<nicehero::MongoConnectionPool> pool = std::make_shared<nicehero::MongoConnectionPool>();
-	bool r = false;//pool->init("mongodb://192.168.9.5:27018", "test");
+	bool r = pool->init("mongodb://192.168.9.5:27018", "test");
 	if (!r){
 		pool = std::shared_ptr<nicehero::MongoConnectionPool>();
 	}
