@@ -141,7 +141,6 @@ namespace nicehero
 			size_t sendSize = m_sendBuffers.front().size();
 			auto self(shared_from_this());
 
-			m_sendBuffers.front().size();
 			asio::async_write(m_socket, asio::buffer(m_sendBuffers.front())
 				, asio::transfer_at_least(m_sendBuffers.front().size())
 				, [this, self, sendSize](asio::error_code ec, std::size_t sentSize) {
