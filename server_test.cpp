@@ -50,96 +50,22 @@ nicehero::KcpSessionS* MyKcpServer::createSession()
 }
 
 
-#ifdef NICE_HAS_CO_AWAIT
-#include "Mongo.hpp"
-
-struct async_add
-{
-	using RetType = int;
-	async_add(int p) :init_(p) {}
-	int init_;
-	IMPL_AWAITABLE(nicehero::TO_DB)
-};
-
-int async_add::execute()
-{
-	return init_ + 1;
-}
-#include "MongoAsync.hpp"
-#endif
-
-class TempObj
-{
-public:
-	TempObj() = default;
-	TempObj(const TempObj& other)
-	{
-		nlog("copy TempObj");
-	}
-	TempObj(TempObj&& other)
-	{
-		nlog("move TempObj");
-	}
-	~TempObj() {
-		nlog("release TempObj");
-	}
-	int x = 0;
-};
-
-
 int main(int argc, char* argv[])
 {
 	bool v6 = (argc > 1 && std::string(argv[1]) == "v6") ? true : false;
 	nicehero::start(true);
-#ifdef NICE_HAS_CO_AWAIT
-	std::shared_ptr<nicehero::MongoConnectionPool> pool = std::make_shared<nicehero::MongoConnectionPool>();
-	bool r = pool->init("mongodb://192.168.9.5:27018", "test");
-	if (!r){
-		pool = std::shared_ptr<nicehero::MongoConnectionPool>();
-	}
-#else
-	int pool = 0;
-#endif
 	std::string listenIP = "0.0.0.0";
 	if (v6)
 	{
 		listenIP = "::";
 	}
 	nicehero::HttpServer httpServer(listenIP,8080);
-	httpServer.addHandler("/", [pool] HTTP_HANDLER_PARAMS
+	httpServer.addHandler("/", [] HTTP_HANDLER_PARAMS
 		{
 			res->write("hello world:\n");
-#ifdef NICE_HAS_CO_AWAIT
-			int r = 0;
-			if (r > 2) {
-				co_return true;
-			}
-			TempObj tt;
-			auto nPool = pool;
-			r = co_await async_add(1);
-			nlog("co_await async_add ok");
-			r += 1;
-			auto cursor = co_await nicehero::MongoPoolFindAsync(nPool
-				, "x"
-				, NBSON("_id", BCON_INT32(1))
-				, nicehero::Bson::createBsonPtr());
-			nlog("co_await nicehero::MongoPoolFindAsync ok");
-			while (auto bobj = cursor->fetch()) {
-				res->write(bobj->toJson());
-			}
-			if (r > 2) {
-				co_return true;
-			}
-			std::stringstream ss;
-			ss << r;
-			res->write(ss.str());
-			r += co_await async_add(1);
-			co_return true;
-#else
 			return true;
-#endif
 	});
-	httpServer.addHandler("/v2", [pool] HTTP_HANDLER_PARAMS
+	httpServer.addHandler("/v2", [] HTTP_HANDLER_PARAMS
 		{
 			res->write("hello world v2:\n");
 			return true;
@@ -161,14 +87,10 @@ TCP_SESSION_COMMAND(MyClient, XDataID)
 	d.s1 = "xxxx";
 	std::string s;
 	s.assign(d.s2.m_Data.get(), d.s2.m_Size);
-#ifdef NICE_HAS_CO_AWAIT
-	int r = co_await async_add(1);
-	r += 1;
-#endif
 	nlog("tcp recv XData size:%d,%s", int(msg.getSize()),s.c_str());
 	MyClient& client = (MyClient&)session;
 	client.sendMessage(d);
-	co_return true;
+	return true;
 }
 
 TCP_SESSION_COMMAND(MyClient, 101)
@@ -176,11 +98,7 @@ TCP_SESSION_COMMAND(MyClient, 101)
 	MyClient& client = (MyClient&)session;
 	//nlog("recv101 recv101Num:%d", client.recv101Num);
 	++client.recv101Num;
-#ifdef NICE_HAS_CO_AWAIT
-	int r = co_await async_add(1);
-	r += 1;
-#endif
-	co_return true;
+	return true;
 }
 static int numClients = 0;
 

@@ -11,6 +11,7 @@
 #include "NoCopy.h"
 #include "Log.h"
 #include "CopyablePtr.hpp"
+#include <string_view>
 
 namespace nicehero
 {
@@ -19,10 +20,8 @@ namespace nicehero
 	{
 		friend class MongoClient;
 		friend class MongoConnectionPool;
-		friend struct MongoPoolFindAsync;
-	protected:
-		MongoCursor(int err, mongoc_cursor_t* cursor = nullptr);
 	public:
+		MongoCursor(int err, mongoc_cursor_t* cursor = nullptr);
 		virtual ~MongoCursor();
 		BsonPtr fetch();
 		int m_err = 0;
@@ -73,6 +72,12 @@ namespace nicehero
 			, const Bson& opt
 			, mongoc_read_mode_t readMode = MONGOC_READ_PRIMARY
 			);
+			
+		MongoCursorPtr find(std::string_view collection
+			, const Bson& query
+			, const Bson& opt
+			, mongoc_read_mode_t readMode = MONGOC_READ_PRIMARY
+			);
 
 		std::string m_dbname;
 	protected:
@@ -119,6 +124,11 @@ namespace nicehero
 			, const Bson& opt
 			, mongoc_read_mode_t readMode = MONGOC_READ_PRIMARY
 			);
+		MongoCursorPtr find(std::string_view collection
+			, const Bson& query
+			, const Bson& opt
+			, mongoc_read_mode_t readMode = MONGOC_READ_PRIMARY
+			);
 
 		MongoClientPtr popClient();
 
@@ -126,6 +136,7 @@ namespace nicehero
 	private:
 		std::string m_dbname;//NotSet because thread safe
 	};
+	using MongoPoolPtr = std::shared_ptr<MongoConnectionPool>;
 
 	inline MongoConnectionPool::~MongoConnectionPool()
 	{
@@ -290,6 +301,16 @@ namespace nicehero
 		}
 		return c->find(collection, query,  opt, readMode);
 	}
+	
+	inline MongoCursorPtr MongoConnectionPool::find(std::string_view collection, const Bson& query, const Bson& opt, mongoc_read_mode_t readMode /*= MONGOC_READ_PRIMARY */)
+	{
+		auto c = popClient();
+		if (!c)
+		{
+			return MongoCursorPtr(new MongoCursor(2));
+		}
+		return c->find(collection, query,  opt, readMode);
+	}
 
 	inline nicehero::MongoClient::MongoClient(MongoConnectionPool& pool,mongoc_client_t* c)
 		:m_pool(pool),m_client(c)
@@ -398,6 +419,29 @@ namespace nicehero
 		auto ret = MongoCursorPtr(new MongoCursor(0, cursor));
 		return ret;
 	}
+	
+	inline MongoCursorPtr nicehero::MongoClient::find(std::string_view collection, const Bson& query, const Bson& opt, mongoc_read_mode_t readMode /*= MONGOC_READ_PRIMARY */)
+	{
+		auto c = m_client;
+		if (!c)
+		{
+			return MongoCursorPtr(new MongoCursor(2));
+		}
+		auto collection_ = mongoc_client_get_collection(c, m_dbname.c_str(), collection.data());
+		if (!collection_)
+		{
+			return MongoCursorPtr(new MongoCursor(2));
+		}
+		auto read_prefs = mongoc_read_prefs_new(readMode);
+		auto cursor = mongoc_collection_find_with_opts(collection_, query.m_bson, opt.m_bson, read_prefs);
+		mongoc_read_prefs_destroy(read_prefs);
+		if (!cursor)
+		{
+			return MongoCursorPtr(new MongoCursor(2));
+		}
+		auto ret = MongoCursorPtr(new MongoCursor(0, cursor));
+		return ret;
+	}
 
 	inline MongoClientPtr nicehero::MongoConnectionPool::popClient()
 	{
@@ -423,7 +467,7 @@ namespace nicehero
 	{
 		if (m_sets.empty() && m_unsets.empty())
 		{
-			return nullptr;
+			return BsonPtr();
 		}
 		auto r = Bson::createBsonPtr();
 		if (m_sets.size() > 0)

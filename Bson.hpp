@@ -5,11 +5,12 @@
 #include <string>
 #include <memory>
 #include "Log.h"
+#include "CopyablePtr.hpp"
 
 namespace nicehero
 {
 	class Bson;
-	typedef std::unique_ptr<Bson> BsonPtr;
+	typedef CopyablePtr<Bson> BsonPtr;
 	class Bson
 	{
 	public:

@@ -117,7 +117,7 @@ namespace nicehero
 			t->async_wait([&,self](std::error_code ec) {
 				if (!ec)
 				{
-					nlog("session connecting timeout");
+					//nlog("session connecting timeout");
 					self->m_socket.close();
 				}
 			});

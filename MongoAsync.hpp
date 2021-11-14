@@ -5,6 +5,8 @@
 #include "Mongo.hpp"
 #include "Service.h"
 #include <memory>
+#include "CoroAwaitable.hpp"
+#include <string_view>
 
 namespace nicehero
 {
@@ -37,7 +39,22 @@ namespace nicehero
 		}
 		return m_pool->find(m_collection, *m_query, *m_opt, m_readMode);
 	}
-
+	
+	CORO_AWAITABLE(MongoPoolFindAsync2,TO_DB,MongoCursorPtr,MongoPoolPtr,std::string,BsonPtr,BsonPtr,mongoc_read_mode_t)
+	{
+		if (!std::get<0>(args)){
+			return MongoCursorPtr(new MongoCursor(2));
+		}
+		return std::get<0>(args)->find(std::get<1>(args),*std::get<2>(args),*std::get<3>(args),std::get<4>(args));
+	}
+	CORO_AWAITABLE_EX(MongoPoolFindAsync3,TO_DB,MongoCursorPtr,MongoPoolPtr,std::string,BsonPtr,BsonPtr,mongoc_read_mode_t)
+	(MongoPoolPtr pool,std::string collection,BsonPtr query,BsonPtr opt,mongoc_read_mode_t readMode)
+	{
+		if (!pool){
+			return MongoCursorPtr(new MongoCursor(2));
+		}
+		return pool->find(collection, *query, *opt, readMode);
+	}
 }
 
 #endif

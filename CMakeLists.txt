@@ -46,6 +46,7 @@ elseif(WIN32)
 	)
 	target_link_libraries(nicenet PUBLIC ikcp sha3 uECC winmm ws2_32 mswsock)
 else()
+	#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++20 -fcoroutines")
 	target_sources(nicenet PRIVATE
 		${SRC1}
 	)

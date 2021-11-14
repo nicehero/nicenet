@@ -44,7 +44,10 @@ namespace nicehero {
 		T&& move() {
 			return std::move(value);
 		}
-
+		explicit operator bool() const noexcept {
+			if (!value) return false;
+			return true;
+		}
 		// If you want these you're probably doing it wrong, though they'd be
 		// easy enough to implement
 		CopyablePtr& operator=(CopyablePtr const&) = delete;
