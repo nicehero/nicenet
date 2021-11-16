@@ -41,6 +41,7 @@
 namespace asio{
 	class io_context;
 }
+
 namespace nicehero {
 #ifdef NICE_HAS_CO_AWAIT
 #if !__has_include(<experimental/coroutine>)
@@ -48,14 +49,21 @@ namespace nicehero {
 	using std::coroutine_handle;
 	using std::suspend_always;
 	using std::suspend_never;
-	using std::suspend_if;
 #else
 #define STDCORO std::experimental
 	using std::experimental::coroutine_handle;
 	using std::experimental::suspend_always;
 	using std::experimental::suspend_never;
-	using std::experimental::suspend_if;
 #endif
+	struct suspend_if {
+		bool _Ready;
+		explicit suspend_if(bool _Condition) noexcept : _Ready(!_Condition){}
+		bool await_ready() noexcept {
+			return _Ready;
+		}
+		void await_suspend(coroutine_handle<>) noexcept {}
+		void await_resume() noexcept {}
+	};
 	template <
 		//								return_type
 		typename				R
@@ -104,12 +112,12 @@ namespace nicehero {
 			return std::move(ret);
 		}
 		void await_suspend(coroutine_handle<> handle) {
-			nicehero::post([handle, this]() {
+			nicehero::post([&handle,this]() {
 				if (executer == return_context) {
 					handle.resume();
 					return;
 				}
-				nicehero::post([handle, this]() {
+				nicehero::post([&handle,this]() {
 					handle.resume();
 				},return_context);
 			},executer);
@@ -129,9 +137,6 @@ namespace nicehero {
 		}
 
 		~Task() {
-			if (m_promise) {
-				m_promise = nullptr;
-			}
 		}
 		Task(R&& r) :ret(r) {
 			hasRet = true;

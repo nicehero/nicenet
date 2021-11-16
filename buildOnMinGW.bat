@@ -6,4 +6,4 @@ cd build
 cmake -G"MinGW Makefiles" ..
 make install
 cd ..
-buildTest.bat
+PAUSE
