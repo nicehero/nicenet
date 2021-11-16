@@ -112,12 +112,12 @@ namespace nicehero {
 			return std::move(ret);
 		}
 		void await_suspend(coroutine_handle<> handle) {
-			nicehero::post([&handle,this]() {
+			nicehero::post([handle,this]() {
 				if (executer == return_context) {
 					handle.resume();
 					return;
 				}
-				nicehero::post([&handle,this]() {
+				nicehero::post([handle,this]() {
 					handle.resume();
 				},return_context);
 			},executer);
