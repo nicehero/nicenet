@@ -52,60 +52,25 @@ nicehero::KcpSessionS* MyKcpServer::createSession()
 
 #ifdef NICE_HAS_CO_AWAIT
 #include "Mongo.hpp"
-
-struct async_add
-{
-	using RetType = int;
-	async_add(int p) :init_(p) {}
-	int init_;
-	IMPL_AWAITABLE(nicehero::TO_DB)
-};
-
-int async_add::execute()
-{
-	return init_ + 1;
-}
 #include "MongoAsync.hpp"
-#include "CoroAwaitable.hpp"
 
-/*
-void f1(){}
-typedef nicehero::Awaitable<f1,nicehero::TO_DB,int,int,int> async_f1;
-template<>
-async_f1::RetType async_f1::execute()
+nicehero::Task<int, nicehero::TO_MULTIWORKER> async_add(int x, int y)
 {
-	return std::get<0>(args) + std::get<1>(args);
+	return x + y;
 }
-*/
-CORO_AWAITABLE(async_f1,nicehero::TO_DB,int,int,int)
+nicehero::Task<int, nicehero::TO_MULTIWORKER> async_mul(int x,int y)
 {
-	return std::get<0>(args) + std::get<1>(args);
-}
-CORO_AWAITABLE(async_f2,nicehero::TO_DB,int,int,int)
-{
-	return std::get<0>(args) * std::get<1>(args);
+	return x * y;
 }
 
-CORO_AWAITABLE_EX(CoroAsyncXX2,nicehero::TO_DB,int,int,int)
-(int x,int y)
-{
-	return x + y + 200;
-}
-
-CORO_AWAITABLE_EX(CoroAsyncXX3,nicehero::TO_DB,int,int,int)
-(int x,int y)
-{
-	return x + y + 300;
-}
 using copy_int = nicehero::CopyablePtr<int>;
 using unique_int = std::unique_ptr<int>;
-CORO_AWAITABLE_EX(CoroAsyncXX4,nicehero::TO_DB,copy_int,int,int)
-(int x,int y)
+nicehero::Task<copy_int, nicehero::TO_MULTIWORKER> CoroAsyncXX4(int x,int y)
 {
 	return nicehero::CopyablePtr<int>(new int(x + y + 400));
 }
-CORO_AWAITABLE_EX(CoroAsyncXX5,nicehero::TO_DB,copy_int,unique_int,int)
-(unique_int x,int y)
+
+nicehero::Task<copy_int, nicehero::TO_MULTIWORKER> CoroAsyncXX5(unique_int x, int y)
 {
 	return nicehero::CopyablePtr<int>(new int(*x + y + 500));
 }
@@ -135,26 +100,20 @@ int main(int argc, char* argv[])
 		{
 			res->write("hello world:\n");
 #ifdef NICE_HAS_CO_AWAIT
+			//!!!Must copy first ,if use the catch of lambda  after co_await ,crash!
+			//!!!or If u use catch of lambda and coroutine not start from the same thread(TO_MAIN in this sample),crash!
 			auto nPool = pool;
 			std::stringstream ss;
 			int r = 0;
 			if (r > 2) {
 				co_return true;
 			}
-			r = co_await async_f2(2,7);
-			ss << "co_await async_f2(2,7):" << r << "\n";
-			res->write(ss.str());
-			
-			r = co_await CoroAsyncXX2(2,7);
-			(ss = std::stringstream()) << "co_await CoroAsyncXX2(2,7):" << r << "\n";
-			res->write(ss.str());
-
 			auto xx = std::make_unique<int>(2);
 			//auto xx = nicehero::make_copyable<int>(2);
 			auto r2 = co_await CoroAsyncXX5(std::move(xx),7);
 			(ss = std::stringstream()) << "co_await CoroAsyncXX5(2,7):" << *r2 << "\n";
 			res->write(ss.str());
-			auto cursor = co_await nicehero::MongoPoolFindAsync3(nPool
+			auto cursor = co_await nicehero::MongoPoolFindAsync(nPool
 				, "x"
 				, NBSON("_id", BCON_INT32(1))
 				, nicehero::Bson::createBsonPtr()
@@ -164,13 +123,10 @@ int main(int argc, char* argv[])
 				res->write(bobj->toJson());
 			}
 			
-			r = co_await async_f1(1,2);
-			(ss = std::stringstream()) << "co_await async_f1(1,2)" << r << "\n";
-			res->write(ss.str());
 			if (r > 2) {
 				co_return true;
 			}
-			r += co_await async_add(1);
+			r += co_await async_add(1,3);
 			co_return true;
 #else
 			return true;
@@ -199,7 +155,7 @@ TCP_SESSION_COMMAND(MyClient, XDataID)
 	std::string s;
 	s.assign(d.s2.m_Data.get(), d.s2.m_Size);
 #ifdef NICE_HAS_CO_AWAIT
-	int r = co_await async_add(1);
+	int r = co_await async_add(2,3);
 	r += 1;
 #endif
 	nlog("tcp recv XData size:%d,%s", int(msg.getSize()),s.c_str());
@@ -214,7 +170,7 @@ TCP_SESSION_COMMAND(MyClient, 101)
 	//nlog("recv101 recv101Num:%d", client.recv101Num);
 	++client.recv101Num;
 #ifdef NICE_HAS_CO_AWAIT
-	int r = co_await async_add(1);
+	int r = co_await async_add(1,1);
 	r += 1;
 #endif
 	co_return true;
@@ -226,7 +182,11 @@ TCP_SESSION_COMMAND(MyClient, 102)
 	MyClient& client = (MyClient&)session;
 	++numClients;
 	nlog("tcp recv102 recv101Num:%d,%d", client.recv101Num,numClients);
-	return true;
+#ifdef NICE_HAS_CO_AWAIT
+	int r = co_await async_add(1, 1);
+	r += 1;
+#endif
+	co_return true;
 }
 
 KCP_SESSION_COMMAND(MyKcpSession, XDataID)

@@ -4,13 +4,7 @@
 #include "Type.h"
 #include <string>
 #include "NoCopy.h"
-#ifdef NICE_HAS_CO_AWAIT
-#if !__has_include(<experimental/coroutine>)
-#include <coroutine>
-#else
-#include <experimental/coroutine>
-#endif
-#endif
+
 namespace nicehero
 {
 	const ui32 PUBLIC_KEY_SIZE = 64;
@@ -32,47 +26,6 @@ namespace nicehero
 	private:
 
 	};
-
-#ifdef NICE_HAS_CO_AWAIT
-	struct AwaitableRet
-	{
-		struct promise_type {
-			auto get_return_object() { return AwaitableRet(true); }
-#if !__has_include(<experimental/coroutine>)
-			auto initial_suspend() { return std::suspend_never{}; }
-			auto final_suspend() noexcept { return std::suspend_never{}; }
-#else
-			auto initial_suspend() { return std::experimental::suspend_never{}; }
-			auto final_suspend() noexcept { return std::experimental::suspend_never{}; }
-#endif
-			void unhandled_exception() { std::terminate(); }
-			//void return_void() {}
-			void return_value(bool value) { _return_value = value; }
-			bool _return_value;
-		};
-		bool ret;
-		AwaitableRet(bool r) :ret(r) {}
-		AwaitableRet() :ret(true) {}
-	};
-	struct VAwaitableRet
-	{
-		struct promise_type {
-			auto get_return_object() { return VAwaitableRet(); }
-#if !__has_include(<experimental/coroutine>)
-			auto initial_suspend() { return std::suspend_never{}; }
-			auto final_suspend() { return std::suspend_never{}; }
-#else
-			auto initial_suspend() { return std::experimental::suspend_never{}; }
-			auto final_suspend() { return std::experimental::suspend_never{}; }
-#endif
-			void unhandled_exception() { std::terminate(); }
-			void return_void() {}
-		};
-	};
-#else
-	using AwaitableRet = bool;
-	using VAwaitableRet = void;
-#endif
 }
 
 #endif

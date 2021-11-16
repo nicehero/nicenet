@@ -12,6 +12,7 @@
 #include "NoCopy.h"
 #include <functional>
 #include "CopyablePtr.hpp"
+#include "Task.hpp"
 
 namespace nicehero
 {
@@ -20,7 +21,8 @@ namespace nicehero
 
 	class KcpSession;
 	using kcpuid = std::string;
-	using kcpcommand = AwaitableRet(*)(KcpSession&, Message&);
+	using KcpTask = Task<bool,TO_MAIN>;
+	using kcpcommand = KcpTask(*)(KcpSession&, Message&);
 
 	class KcpServer;
 	class KcpSessionImpl;
@@ -154,30 +156,13 @@ namespace nicehero
 
 }
 
-#ifndef NICE_HAS_CO_AWAIT
-
 #define KCP_SESSION_COMMAND(CLASS,COMMAND) \
-static bool _##CLASS##_##COMMAND##FUNC(nicehero::KcpSession& session, nicehero::Message& msg);\
+static nicehero::KcpTask _##CLASS##_##COMMAND##FUNC(nicehero::KcpSession& session, nicehero::Message& msg); \
 static nicehero::KcpSessionCommand _##CLASS##_##COMMAND(typeid(CLASS), COMMAND, _##CLASS##_##COMMAND##FUNC);\
-static bool _##CLASS##_##COMMAND##FUNC(nicehero::KcpSession& session, nicehero::Message& msg)
-#else
-#define KCP_SESSION_COMMAND(CLASS,COMMAND) \
-static nicehero::AwaitableRet _##CLASS##_##COMMAND##FUNC(nicehero::KcpSession& session, nicehero::Message& msg); \
-static nicehero::KcpSessionCommand _##CLASS##_##COMMAND(typeid(CLASS), COMMAND, _##CLASS##_##COMMAND##FUNC);\
-static nicehero::AwaitableRet _##CLASS##_##COMMAND##FUNC(nicehero::KcpSession& session, nicehero::Message& msg)
-#endif
+static nicehero::KcpTask _##CLASS##_##COMMAND##FUNC(nicehero::KcpSession& session, nicehero::Message& msg)
 
 #ifndef SESSION_COMMAND
-#define SESSION_COMMAND TCP_SESSION_COMMAND
+#define SESSION_COMMAND KCP_SESSION_COMMAND
 #endif
 
-#define KCP_SESSION_YIELDCMD(CLASS,COMMAND) \
-namespace{\
-class _##CLASS##_##COMMAND##TASK:asio::coroutine\
-{\
-	bool exe(nicehero::KcpSession& session, nicehero::Message& msg);\
-};\
-static nicehero::KcpSessionCommand _##CLASS##_##COMMAND(typeid(CLASS), COMMAND, _##CLASS##_##COMMAND##FUNC);\
-bool _##CLASS##_##COMMAND##TASK::exe(nicehero::KcpSession& session, nicehero::Message& msg){\
-	reenter(this){
 #endif

@@ -259,6 +259,10 @@ namespace nicehero
 
 	void HttpResponse::write(const std::string& str)
 	{
+		if (str.size() < 1)
+		{
+			return;
+		}
 		content.resize(content.size() + str.size());
 		memcpy(&(content[content.size() - str.size()]), str.c_str(), str.size());
 	}

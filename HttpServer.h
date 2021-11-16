@@ -8,6 +8,7 @@
 #include <functional>
 #include <unordered_map>
 #include "Server.h"
+#include "Task.hpp"
 
 namespace nicehero
 {
@@ -15,7 +16,8 @@ namespace nicehero
 	class HttpServerImpl;
 	class HttpRequest;
 	class HttpResponse;
-	using HttpHandler = std::function<AwaitableRet(CopyablePtr<HttpRequest> req, CopyablePtr<HttpResponse> res)>;
+	using HttpTask = Task<bool,TO_MAIN>;
+	using HttpHandler = std::function<HttpTask(CopyablePtr<HttpRequest> req, CopyablePtr<HttpResponse> res)>;
 	class HttpServer
 		:public NoCopy
 	{
@@ -59,10 +61,7 @@ namespace nicehero
 
 
 }
-#ifdef NICE_HAS_CO_AWAIT
-#define HTTP_HANDLER_PARAMS (nicehero::CopyablePtr<nicehero::HttpRequest> req, nicehero::CopyablePtr<nicehero::HttpResponse> res)->nicehero::AwaitableRet
-#else
-#define HTTP_HANDLER_PARAMS (nicehero::CopyablePtr<nicehero::HttpRequest> req, nicehero::CopyablePtr<nicehero::HttpResponse> res) 
-#endif
-#endif
 
+#define HTTP_HANDLER_PARAMS (nicehero::CopyablePtr<nicehero::HttpRequest> req, nicehero::CopyablePtr<nicehero::HttpResponse> res)->nicehero::HttpTask
+
+#endif

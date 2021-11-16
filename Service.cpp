@@ -8,6 +8,8 @@ namespace nicehero{
 	asio::io_context gWorkerServices[WORK_THREAD_COUNT];
 	asio::io_context gDBServices[DB_THREAD_COUNT];
 	std::thread gMainThread;
+
+	thread_local ToService gCurrentService = TO_NONE;
 }
 static int checkCPUendian() {
 	union {
@@ -29,11 +31,13 @@ void nicehero::start(bool background)
 	for (int i = 0; i < WORK_THREAD_COUNT; ++i)
 	{
 		std::thread t([i] {
+			gCurrentService = TO_WORKER;
 			asio::io_context::work work(gWorkerServices[i]);
 			gWorkerServices[i].run();
 		});
 		t.detach();
 		std::thread t2([] {
+			gCurrentService = TO_MULTIWORKER;
 			asio::io_context::work work2(gMultiWorkerService);
 			gMultiWorkerService.run();
 		});
@@ -42,6 +46,7 @@ void nicehero::start(bool background)
 	for (int i = 0; i < DB_THREAD_COUNT; ++i)
 	{
 		std::thread t([i] {
+			gCurrentService = TO_DB;
 			asio::io_context::work work(gDBServices[i]);
 			gDBServices[i].run();
 		});
@@ -51,6 +56,7 @@ void nicehero::start(bool background)
 	if (background)
 	{
 		std::thread t([] {
+			gCurrentService = TO_MAIN;
 			asio::io_context::work work(gService);
 			gService.run();
 		});
@@ -58,6 +64,7 @@ void nicehero::start(bool background)
 	}
 	else
 	{
+		gCurrentService = TO_MAIN;
 		asio::io_context::work work(gService);
 		gService.run();
 	}
