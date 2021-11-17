@@ -29,36 +29,47 @@ set(SRC2
 )
 
 
-add_library(nicenet SHARED)
-
-add_definitions(-DASIO_STANDALONE)
 
 option(CORO "option for coro" OFF)
-
+add_definitions(-DASIO_STANDALONE)
+set(CORO_END "")
+if (CORO)
+	set(CORO_END "Coro")
+endif()
+set(oname nicenet${CORO_END})
 if (ANDROID)
 	if (CORO)
 		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++2a -fcoroutines-ts")
 	endif()
-	target_sources(nicenet PRIVATE
+	set(ALL_SRC
 		${SRC1}
 		${SRC2}
 	)
+	add_library(${oname} SHARED ${ALL_SRC})
 elseif(WIN32)
 	if (CORO)
 		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++20 -fcoroutines")
 	endif()
-	target_sources(nicenet PRIVATE
+	set(ALL_SRC
 		${SRC1}
 	)
-	target_link_libraries(nicenet PUBLIC ikcp sha3 uECC winmm ws2_32 mswsock)
+	add_library(${oname} SHARED ${ALL_SRC})
+	target_link_libraries(${oname} PUBLIC ikcp sha3 uECC winmm ws2_32 mswsock)
 else()
 	if (CORO)
 		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++20 -fcoroutines")
 	endif()
-	target_sources(nicenet PRIVATE
+	set(ALL_SRC
 		${SRC1}
 	)
-	target_link_libraries(nicenet PUBLIC ikcp sha3 uECC)
+	add_library(${oname} SHARED ${ALL_SRC})
+	target_link_libraries(${oname} PUBLIC ikcp sha3 uECC)
 endif()
 
-install(TARGETS nicenet DESTINATION ${PROJECT_SOURCE_DIR})
+
+FILE(GLOB INSTALL_HEAD_FILES ${PROJECT_SOURCE_DIR}/*.h ${PROJECT_SOURCE_DIR}/*.hpp)
+FILE(GLOB INSTALL_PROTO_FILES "${PROJECT_SOURCE_DIR}/proto/*")
+install(TARGETS ${oname} DESTINATION ${PROJECT_SOURCE_DIR})
+install(TARGETS ${oname} DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
+install(FILES ${INSTALL_HEAD_FILES} DESTINATION ${CMAKE_INSTALL_PREFIX}/include/nicenet)
+install(FILES ${INSTALL_PROTO_FILES} DESTINATION ${CMAKE_INSTALL_PREFIX}/proto)

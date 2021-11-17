@@ -25,7 +25,7 @@ public:
 	virtual nicehero::TcpSessionS* createSession();
 };
 
-nicehero::TcpSessionS* MyServer::createSession()
+auto MyServer::createSession()->nicehero::TcpSessionS*
 {
 	return new MyClient();
 }
@@ -44,7 +44,7 @@ public:
 	virtual nicehero::KcpSessionS* createSession();
 };
 
-nicehero::KcpSessionS* MyKcpServer::createSession()
+auto MyKcpServer::createSession()->nicehero::KcpSessionS*
 {
 	return new MyKcpSession();
 }
