@@ -112,13 +112,20 @@ namespace nicehero {
 			return std::move(ret);
 		}
 		void await_suspend(coroutine_handle<> handle) {
-			nicehero::post([handle,this]() {
-				if (executer == return_context) {
-					handle.resume();
+			m_handle = handle;
+			nicehero::post([this]() {
+				if (!m_handle) {
 					return;
 				}
-				nicehero::post([handle,this]() {
-					handle.resume();
+				if (executer == return_context) {
+					m_handle.resume();
+					return;
+				}
+				nicehero::post([this]() {
+					if (!m_handle) {
+						return;
+					}
+					m_handle.resume();
 				},return_context);
 			},executer);
 		}
@@ -146,6 +153,7 @@ namespace nicehero {
 			promise_type* m_promise = nullptr;
 			R ret;
 			bool hasRet = false;
+			coroutine_handle<> m_handle = nullptr;
 	};
 #else
 	template <typename R, nicehero::ToService executer, nicehero::ToService return_context = executer>

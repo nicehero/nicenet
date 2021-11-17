@@ -54,7 +54,7 @@ nicehero::KcpSessionS* MyKcpServer::createSession()
 #include "Mongo.hpp"
 #include "MongoAsync.hpp"
 
-nicehero::Task<int, nicehero::TO_MULTIWORKER> async_add(int x, int y)
+nicehero::Task<int, nicehero::TO_MULTIWORKER,nicehero::TO_MAIN> async_add(int x, int y)
 {
 	return x + y;
 }
@@ -150,7 +150,7 @@ using namespace Proto;
 TCP_SESSION_COMMAND(MyClient, XDataID)
 {
 	XData d;
-	msg >> d;
+	*msg >> d;
 	d.s1 = "xxxx";
 	std::string s;
 	s.assign(d.s2.m_Data.get(), d.s2.m_Size);
@@ -158,17 +158,17 @@ TCP_SESSION_COMMAND(MyClient, XDataID)
 	int r = co_await async_add(2,3);
 	r += 1;
 #endif
-	nlog("tcp recv XData size:%d,%s", int(msg.getSize()),s.c_str());
-	MyClient& client = (MyClient&)session;
-	client.sendMessage(d);
+	nlog("tcp recv XData size:%d,%s", int(msg->getSize()), s.c_str());
+	session->sendMessage(d);
 	co_return true;
 }
 
+
 TCP_SESSION_COMMAND(MyClient, 101)
 {
-	MyClient& client = (MyClient&)session;
-	//nlog("recv101 recv101Num:%d", client.recv101Num);
+	MyClient& client = (MyClient&)*session.get();
 	++client.recv101Num;
+	nlog("recv101 recv101Num:%d", client.recv101Num);
 #ifdef NICE_HAS_CO_AWAIT
 	int r = co_await async_add(1,1);
 	r += 1;
@@ -179,7 +179,7 @@ static int numClients = 0;
 
 TCP_SESSION_COMMAND(MyClient, 102)
 {
-	MyClient& client = (MyClient&)session;
+	MyClient& client = (MyClient&)*session.get();
 	++numClients;
 	nlog("tcp recv102 recv101Num:%d,%d", client.recv101Num,numClients);
 #ifdef NICE_HAS_CO_AWAIT
@@ -191,13 +191,17 @@ TCP_SESSION_COMMAND(MyClient, 102)
 
 KCP_SESSION_COMMAND(MyKcpSession, XDataID)
 {
+#ifdef NICE_HAS_CO_AWAIT
+	int r = co_await async_add(1, 1);
+	r += 1;
+#endif
 	XData d;
-	msg >> d;
+	*msg >> d;
 	d.s1 = "xxxx";
 	std::string s;
 	s.assign(d.s2.m_Data.get(), d.s2.m_Size);
-	nlog("kcp recv XData size:%d,%s", int(msg.getSize()),s.c_str());
+	nlog("kcp recv XData size:%d,%s", int(msg->getSize()),s.c_str());
 	
-	session.sendMessage(d);
-	return true;
+	session->sendMessage(d);
+	co_return true;
 }

@@ -1,8 +1,8 @@
 cd dep
 python build.py
 cd ..
-mkdir build
-cd build
-cmake ..
+mkdir buildCoro
+cd buildCoro
+cmake -DCORO=ON ..
 make install
 cd ..

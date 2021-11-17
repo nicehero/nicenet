@@ -145,7 +145,7 @@ public:
 			{
 				if (buffer->c_str()[0] == 1 && bytesRecvd == 1)
 				{
-					std::shared_ptr<KcpSession> ks = std::shared_ptr<KcpSession>(m_server.createSession());
+					KcpSessionPtr ks = KcpSessionPtr(m_server.createSession());
 					KcpSessionS* ss = dynamic_cast<KcpSessionS*>(ks.get());
 					if (ss)
 					{
@@ -159,7 +159,7 @@ public:
 				else if (buffer->c_str()[0] == 2)
 				{
 					m_PreSessionsLock.lock();
-					std::shared_ptr<KcpSession> ks = m_PreSessions[*senderEndpoint];
+					KcpSessionPtr ks = m_PreSessions[*senderEndpoint];
 					m_PreSessions.erase(*senderEndpoint);
 					m_PreSessionsLock.unlock();
 					if (bytesRecvd >= PUBLIC_KEY_SIZE + SIGN_SIZE + 1 && ks)
@@ -228,9 +228,9 @@ public:
 		std::shared_ptr<asio::ip::udp::socket> m_socket;
 		asio::ip::address m_ip;
 		ui16 m_port;
-		std::map<asio::ip::udp::endpoint, std::shared_ptr<KcpSession> > m_PreSessions;
+		std::map<asio::ip::udp::endpoint, KcpSessionPtr > m_PreSessions;
 		std::mutex m_PreSessionsLock;
-		std::unordered_map<kcpuid, std::shared_ptr<KcpSession> > m_RunningSessions[nicehero::WORK_THREAD_COUNT];
+		std::unordered_map<kcpuid, KcpSessionPtr > m_RunningSessions[nicehero::WORK_THREAD_COUNT];
 	};
 
 	KcpServer::KcpServer(const std::string& ip, ui16 port)
@@ -262,7 +262,7 @@ public:
 		return new KcpSessionS();
 	}
 
-	void KcpServer::addSession(const kcpuid& uid, std::shared_ptr<KcpSession> session)
+	void KcpServer::addSession(const kcpuid& uid, KcpSessionPtr session)
 	{
 		auto it = m_sessions.find(uid);
 		if (it != m_sessions.end())
@@ -596,7 +596,7 @@ public:
 			memcpy(prevMsg.m_buff + prevMsg.m_writePoint, data + cutSize, msgLen - prevMsg.m_writePoint);
 			data = data + cutSize + (msgLen - prevMsg.m_writePoint);
 			len = len - cutSize - (msgLen - prevMsg.m_writePoint);
-			auto recvMsg = CopyablePtr<Message>();
+			auto recvMsg = MessagePtr();
 			recvMsg->swap(prevMsg);
 // 			if (m_MessageParser && m_MessageParser->m_commands[recvMsg->getMsgID()] == nullptr)
 // 			{
@@ -627,7 +627,7 @@ public:
 
 	}
 
-	void KcpSession::handleMessage(CopyablePtr<Message> msg)
+	void KcpSession::handleMessage(MessagePtr msg)
 	{
 		if (m_closed)
 		{
@@ -656,7 +656,7 @@ public:
 				nlogerr("KcpSession::handleMessage undefined msg:%d", ui32(msg->getMsgID()));
 				return;
 			}
-			m_MessageParser->m_commands[msg->getMsgID()](*this, *msg.get());
+			m_MessageParser->m_commands[msg->getMsgID()](shared_from_this(),msg);
 		}
 	}
 

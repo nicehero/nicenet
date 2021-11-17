@@ -20,8 +20,10 @@ namespace nicehero
 {
 	class TcpSession;
 	using tcpuid = std::string;
+	using TcpSessionPtr = std::shared_ptr<TcpSession>;
+	using MessagePtr = CopyablePtr<Message>;
 	using TcpTask = Task<bool,TO_MAIN>;
-	using tcpcommand = TcpTask(*)(TcpSession&, Message&);
+	using tcpcommand = TcpTask(*)(TcpSessionPtr,MessagePtr);
 	//typedef std::function<bool(TcpSession&, Message&)> tcpcommand;
 	class TcpServer;
 	class TcpSessionImpl;
@@ -70,7 +72,7 @@ namespace nicehero
 		void doSend();
 		std::atomic_bool m_IsSending;
 		std::list<Message> m_SendList;
-		virtual void handleMessage(CopyablePtr<Message> msg);
+		virtual void handleMessage(MessagePtr msg);
 	};
 	class TcpSessionS
 		:public TcpSession
@@ -119,10 +121,10 @@ namespace nicehero
 
 		virtual TcpSessionS* createSession();
 
-		virtual void addSession(const tcpuid& uid, std::shared_ptr<TcpSession> session);
+		virtual void addSession(const tcpuid& uid, TcpSessionPtr session);
 		virtual void removeSession(const tcpuid& uid,ui64 serialID);
 		virtual void accept();
-		std::unordered_map<tcpuid, std::shared_ptr<TcpSession> > m_sessions;
+		std::unordered_map<tcpuid, TcpSessionPtr > m_sessions;
 	};
 	TcpMessageParser& getTcpMessagerParse(const std::type_info& typeInfo);
 	inline TcpSessionCommand::TcpSessionCommand(const std::type_info & info,  ui16 command, tcpcommand func )
@@ -134,9 +136,9 @@ namespace nicehero
 }
 
 #define TCP_SESSION_COMMAND(CLASS,COMMAND) \
-static nicehero::TcpTask _##CLASS##_##COMMAND##FUNC(nicehero::TcpSession& session, nicehero::Message& msg);\
+static nicehero::TcpTask _##CLASS##_##COMMAND##FUNC(nicehero::TcpSessionPtr session,nicehero::MessagePtr msg);\
 static nicehero::TcpSessionCommand _##CLASS##_##COMMAND(typeid(CLASS), COMMAND, _##CLASS##_##COMMAND##FUNC);\
-static nicehero::TcpTask _##CLASS##_##COMMAND##FUNC(nicehero::TcpSession& session, nicehero::Message& msg)
+static nicehero::TcpTask _##CLASS##_##COMMAND##FUNC(nicehero::TcpSessionPtr session,nicehero::MessagePtr msg)
 
 #ifndef SESSION_COMMAND
 #define SESSION_COMMAND TCP_SESSION_COMMAND

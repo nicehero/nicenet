@@ -83,19 +83,19 @@ using namespace Proto;
 TCP_SESSION_COMMAND(MyClient, XDataID)
 {
 	XData d;
-	msg >> d;
+	*msg >> d;
 	d.s1 = "xxxx";
 	std::string s;
 	s.assign(d.s2.m_Data.get(), d.s2.m_Size);
-	nlog("tcp recv XData size:%d,%s", int(msg.getSize()),s.c_str());
-	MyClient& client = (MyClient&)session;
+	nlog("tcp recv XData size:%d,%s", int(msg->getSize()),s.c_str());
+	MyClient& client = (MyClient&)*session.get();
 	client.sendMessage(d);
 	return true;
 }
 
 TCP_SESSION_COMMAND(MyClient, 101)
 {
-	MyClient& client = (MyClient&)session;
+	MyClient& client = (MyClient&)*session.get();
 	//nlog("recv101 recv101Num:%d", client.recv101Num);
 	++client.recv101Num;
 	return true;
@@ -104,7 +104,7 @@ static int numClients = 0;
 
 TCP_SESSION_COMMAND(MyClient, 102)
 {
-	MyClient& client = (MyClient&)session;
+	MyClient& client = (MyClient&)*session.get();
 	++numClients;
 	nlog("tcp recv102 recv101Num:%d,%d", client.recv101Num,numClients);
 	return true;
@@ -113,12 +113,12 @@ TCP_SESSION_COMMAND(MyClient, 102)
 KCP_SESSION_COMMAND(MyKcpSession, XDataID)
 {
 	XData d;
-	msg >> d;
+	*msg >> d;
 	d.s1 = "xxxx";
 	std::string s;
 	s.assign(d.s2.m_Data.get(), d.s2.m_Size);
-	nlog("kcp recv XData size:%d,%s", int(msg.getSize()),s.c_str());
+	nlog("kcp recv XData size:%d,%s", int(msg->getSize()),s.c_str());
 	
-	session.sendMessage(d);
+	session->sendMessage(d);
 	return true;
 }

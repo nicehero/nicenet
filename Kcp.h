@@ -22,7 +22,9 @@ namespace nicehero
 	class KcpSession;
 	using kcpuid = std::string;
 	using KcpTask = Task<bool,TO_MAIN>;
-	using kcpcommand = KcpTask(*)(KcpSession&, Message&);
+	using KcpSessionPtr = std::shared_ptr<KcpSession>;
+	using MessagePtr = CopyablePtr<Message>;
+	using kcpcommand = KcpTask(*)(KcpSessionPtr, MessagePtr);
 
 	class KcpServer;
 	class KcpSessionImpl;
@@ -75,7 +77,7 @@ namespace nicehero
 		void doSend(Message& msg, bool pureUdp);
 		std::atomic_bool m_IsSending;
 		std::list<Message> m_SendList;
-		virtual void handleMessage(CopyablePtr<Message> msg);
+		virtual void handleMessage(MessagePtr msg);
 		bool m_Ready = true;
 		std::atomic_bool m_closed;
 	private:
@@ -138,7 +140,7 @@ namespace nicehero
 
 		virtual KcpSessionS* createSession();
 
-		virtual void addSession(const kcpuid& uid, std::shared_ptr<KcpSession> session);
+		virtual void addSession(const kcpuid& uid, KcpSessionPtr session);
 		virtual void removeSession(const kcpuid& uid,ui64 serialID);
 		virtual void accept();
 		std::unordered_map<kcpuid, std::shared_ptr<KcpSession> > m_sessions;
@@ -157,9 +159,9 @@ namespace nicehero
 }
 
 #define KCP_SESSION_COMMAND(CLASS,COMMAND) \
-static nicehero::KcpTask _##CLASS##_##COMMAND##FUNC(nicehero::KcpSession& session, nicehero::Message& msg); \
+static nicehero::KcpTask _##CLASS##_##COMMAND##FUNC(nicehero::KcpSessionPtr session,nicehero::MessagePtr msg); \
 static nicehero::KcpSessionCommand _##CLASS##_##COMMAND(typeid(CLASS), COMMAND, _##CLASS##_##COMMAND##FUNC);\
-static nicehero::KcpTask _##CLASS##_##COMMAND##FUNC(nicehero::KcpSession& session, nicehero::Message& msg)
+static nicehero::KcpTask _##CLASS##_##COMMAND##FUNC(nicehero::KcpSessionPtr session,nicehero::MessagePtr msg)
 
 #ifndef SESSION_COMMAND
 #define SESSION_COMMAND KCP_SESSION_COMMAND

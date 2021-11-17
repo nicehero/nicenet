@@ -33,20 +33,28 @@ add_library(nicenet SHARED)
 
 add_definitions(-DASIO_STANDALONE)
 
+option(CORO "option for coro" OFF)
+
 if (ANDROID)
-	#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++2a -fcoroutines-ts")
+	if (CORO)
+		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++2a -fcoroutines-ts")
+	endif()
 	target_sources(nicenet PRIVATE
 		${SRC1}
 		${SRC2}
 	)
 elseif(WIN32)
-	#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++20 -fcoroutines")
+	if (CORO)
+		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++20 -fcoroutines")
+	endif()
 	target_sources(nicenet PRIVATE
 		${SRC1}
 	)
 	target_link_libraries(nicenet PUBLIC ikcp sha3 uECC winmm ws2_32 mswsock)
 else()
-	#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++20 -fcoroutines")
+	if (CORO)
+		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++20 -fcoroutines")
+	endif()
 	target_sources(nicenet PRIVATE
 		${SRC1}
 	)

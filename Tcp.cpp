@@ -47,7 +47,7 @@ public:
 		}
 		void accept()
 		{
-			std::shared_ptr<TcpSession> s = std::shared_ptr<TcpSession>(m_server.createSession());
+			TcpSessionPtr s = TcpSessionPtr(m_server.createSession());
 			TcpSessionS* ss = dynamic_cast<TcpSessionS*>(s.get());
 			if (ss)
 			{
@@ -97,7 +97,7 @@ public:
 		return new TcpSessionS();
 	}
 
-	void TcpServer::addSession(const tcpuid& uid, std::shared_ptr<TcpSession> session)
+	void TcpServer::addSession(const tcpuid& uid, TcpSessionPtr session)
 	{
 		auto it = m_sessions.find(uid);
 		if (it != m_sessions.end())
@@ -379,7 +379,7 @@ public:
 			memcpy(prevMsg.m_buff + prevMsg.m_writePoint, data + cutSize, msgLen - prevMsg.m_writePoint);
 			data = data + cutSize + (msgLen - prevMsg.m_writePoint);
 			len = len - cutSize - (msgLen - prevMsg.m_writePoint);
-			auto recvMsg = CopyablePtr<Message>();
+			auto recvMsg = MessagePtr();
 			recvMsg->swap(prevMsg);
 // 			if (m_MessageParser && m_MessageParser->m_commands[recvMsg->getMsgID()] == nullptr)
 // 			{
@@ -410,7 +410,7 @@ public:
 
 	}
 
-	void TcpSession::handleMessage(CopyablePtr<Message> msg)
+	void TcpSession::handleMessage(MessagePtr msg)
 	{
 		if (m_MessageParser)
 		{
@@ -419,7 +419,7 @@ public:
 				nlogerr("TcpSession::handleMessage undefined msg:%d", ui32(msg->getMsgID()));
 				return;
 			}
-			m_MessageParser->m_commands[msg->getMsgID()](*this, *msg.get());
+			m_MessageParser->m_commands[msg->getMsgID()](shared_from_this(),msg);
 		}
 	}
 
