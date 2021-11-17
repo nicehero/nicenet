@@ -95,27 +95,6 @@ int main(){
 #endif
 	//          http                ip      ,port
 	nicehero::HttpServer httpServer(listenIP,8080);
-	nicehero::start(true);
-	httpServer.addHandler("/", [] HTTP_HANDLER_PARAMS {
-			res->write("hello world:\n");
-			return true;
-	});
-	nicehero::joinMain();
-	return 0;
-}
-```
-
-## how to make a http server
-```c++
-#include <Service.h>
-#include <HttpServer.h>
-int main(){
-	std::string listenIP = "0.0.0.0";
-#ifdef __IPV6__
-	listenIP = "::";
-#endif
-	//          http                ip      ,port
-	nicehero::HttpServer httpServer(listenIP,8080);
 	nicehero::start();
 	httpServer.addHandler("/", [] HTTP_HANDLER_PARAMS {
 			res->write("hello world:\n");
@@ -208,5 +187,5 @@ int main(){
 Any httpServer.addHandler callback or SESSION_COMMAND socket callback 
 can use co_await nicehero::Task obj and use co_return instead of return.
 
-Other useage such as MongoDB read exsample coro_server_test.cpp or mongoBenchmarkImpl.cpp
+Other useage such as MongoDB read example coro_server_test.cpp or mongoBenchmarkImpl.cpp
 
