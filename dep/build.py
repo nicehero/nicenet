@@ -1,4 +1,5 @@
 import os
+import time
 def do_os(cmd):
 	b = os.system(cmd)
 	if b != 0:
@@ -29,7 +30,7 @@ else:
 do_os("rm -rf uECC.o")
 
 print ('end micro-ecc')
-
+time.sleep(2)
 print ('download asio')
 do_os("wget https://gitee.com/nicehero/asio/attach_files/879378/download/asio-asio-1-19-2.tar.gz")
 do_os("tar xvf asio-asio-1-19-2.tar.gz")
@@ -37,7 +38,7 @@ do_os("mv asio-asio-1-19-2/asio/include/asio include/")
 do_os("mv asio-asio-1-19-2/asio/include/asio.hpp include/asio/")
 do_os("rm -rf asio-asio-1-19-2")
 do_os("rm -rf asio-asio-1-19-2.tar.gz")
-
+time.sleep(2)
 print ('download tiny_sha3')
 do_os("git clone https://gitee.com/nicehero/tiny_sha3")
 do_os("mv tiny_sha3 include/")
