@@ -8,6 +8,7 @@
 #include "TestProtocol.h"
 #include "Kcp.h"
 #include "Clock.h"
+#include<chrono>
 
 class MyClient :public nicehero::TcpSessionC
 {
@@ -44,7 +45,7 @@ int main(int argc, char* argv[])
 	if (!kcpc->m_isInit)
 	{
 		nicehero::stop();
-		Sleep(1000);
+		std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 		nicehero::joinMain();
 		return 0;
 	}
