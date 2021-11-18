@@ -176,6 +176,13 @@ int main(){
 	std::string serverIP = "127.0.0.1";//use ipv6 like "::1"
 	//connect  ip      , port
 	c->connect(serverIP, 7000);
+	c->init();
+	if (!c->m_isInit) // connect error
+	{
+		//do something
+		return 0;
+	}
+	c->startRead();
 	//do something with c
 	nicehero::joinMain();
 	return 0;
