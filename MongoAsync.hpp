@@ -15,9 +15,9 @@ namespace nicehero
 		MongoPoolPtr pool,std::string collection,BsonPtr query,BsonPtr opt,mongoc_read_mode_t readMode)
 	{
 		if (!pool){
-			return MongoCursorPtr(new MongoCursor(2));
+			co_return MongoCursorPtr(new MongoCursor(2));
 		}
-		return pool->find(collection, *query, *opt, readMode);
+		co_return pool->find(collection, *query, *opt, readMode);
 	}
 }
 

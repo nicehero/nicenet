@@ -1,5 +1,4 @@
 #include "Service.h"
-#include "Tcp.h"
 #include <micro-ecc/uECC.h>
 #include "Log.h"
 #include <asio/asio.hpp>
@@ -13,8 +12,6 @@
 #include <mongoc/mongoc.h>
 #include "Mongo.hpp"
 #include "Clock.h"
-#include "Kcp.h"
-#include <kcp/ikcp.h>
 
 void benchmark_update(int threadNum, std::shared_ptr<nicehero::MongoConnectionPool> pool, std::string tablename)
 {

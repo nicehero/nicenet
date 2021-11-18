@@ -57,7 +57,8 @@ namespace nicehero {
 #endif
 	struct suspend_if {
 		bool _Ready;
-		explicit suspend_if(bool _Condition) noexcept : _Ready(!_Condition){}
+		explicit suspend_if(bool _Condition) noexcept : _Ready(!_Condition){
+		}
 		bool await_ready() noexcept {
 			return _Ready;
 		}
@@ -78,7 +79,8 @@ namespace nicehero {
 				return suspend_if{ executer != gCurrentService };
 			}
 			auto final_suspend() noexcept {
-				return suspend_never{};
+				//return suspend_if{ return_context != gCurrentService };
+				return suspend_never();
 			}
 			auto get_return_object() {
 				return Task<R, executer, return_context>(this);
@@ -91,6 +93,21 @@ namespace nicehero {
 			void return_value(U&& value) {
 				if (m_task) {
 					m_task->ret = std::move(value);
+					auto h = m_task->m_handle;
+					if (!h) {
+						return;
+					}
+					if (gCurrentService == return_context)
+					{
+						h.resume();
+						return;
+					}
+					nicehero::post([h]() {
+						if (!h) {
+							return;
+						}
+						h.resume();
+					}, return_context);
 				}
 			}
 			promise_type() {
@@ -100,6 +117,7 @@ namespace nicehero {
 				if (m_task) {
 					m_task->m_promise = nullptr;
 				}
+				m_task = nullptr;
 			}
 			friend struct Task<R, executer, return_context>;
 		protected:
@@ -112,28 +130,26 @@ namespace nicehero {
 			return std::move(ret);
 		}
 		void await_suspend(coroutine_handle<> handle) {
-			m_handle = handle;
-			nicehero::post([this]() {
-				if (!m_handle) {
-					return;
-				}
-				if (executer == return_context) {
-					m_handle.resume();
-					return;
-				}
-				nicehero::post([this]() {
-					if (!m_handle) {
-						return;
-					}
-					m_handle.resume();
+			if (first_context == executer && return_context == executer) {
+				handle.resume();
+				return;
+			}
+			if (first_context == executer && return_context != executer)
+			{
+				m_handle2 = handle;
+				nicehero::post([this] {
+					m_handle2.resume();
 				},return_context);
-			},executer);
+				return;
+			}
+			m_handle = handle;
 		}
 		Task(promise_type* p) {
 			m_promise = p;
 			if (m_promise) {
 				m_promise->m_task = this;
 			}
+			first_context = gCurrentService;
 			if (executer != gCurrentService)
 			{
 				nicehero::post([p] {
@@ -144,6 +160,9 @@ namespace nicehero {
 		}
 
 		~Task() {
+			if (m_promise) {
+				m_promise->m_task = nullptr;
+			}
 		}
 		Task(R&& r) :ret(r) {
 			hasRet = true;
@@ -154,6 +173,8 @@ namespace nicehero {
 			R ret;
 			bool hasRet = false;
 			coroutine_handle<> m_handle = nullptr;
+			coroutine_handle<> m_handle2 = nullptr;
+			nicehero::ToService first_context = TO_NONE;
 	};
 #else
 	template <typename R, nicehero::ToService executer, nicehero::ToService return_context = executer>

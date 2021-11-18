@@ -56,23 +56,24 @@ auto MyKcpServer::createSession()->nicehero::KcpSessionS*
 
 nicehero::Task<int, nicehero::TO_MULTIWORKER,nicehero::TO_MAIN> async_add(int x, int y)
 {
-	return x + y;
+	co_return x + y;
 }
 nicehero::Task<int, nicehero::TO_MULTIWORKER> async_mul(int x,int y)
 {
-	return x * y;
+	co_return x * y;
 }
 
 using copy_int = nicehero::CopyablePtr<int>;
 using unique_int = std::unique_ptr<int>;
 nicehero::Task<copy_int, nicehero::TO_MULTIWORKER> CoroAsyncXX4(int x,int y)
 {
-	return nicehero::CopyablePtr<int>(new int(x + y + 400));
+	co_return nicehero::CopyablePtr<int>(new int(x + y + 400));
 }
 
 nicehero::Task<copy_int, nicehero::TO_MULTIWORKER> CoroAsyncXX5(unique_int x, int y)
 {
-	return nicehero::CopyablePtr<int>(new int(*x + y + 500));
+	int r = *x + y + 500;
+	co_return nicehero::CopyablePtr<int>(new int(r));
 }
 
 #endif
@@ -96,42 +97,43 @@ int main(int argc, char* argv[])
 		listenIP = "::";
 	}
 	nicehero::HttpServer httpServer(listenIP,8080);
-	httpServer.addHandler("/", [pool] HTTP_HANDLER_PARAMS
-		{
-			res->write("hello world:\n");
+	auto f = [pool] HTTP_HANDLER_PARAMS
+	{
+		res->write("hello world:\n");
 #ifdef NICE_HAS_CO_AWAIT
-			//!!!Must copy first ,if use the catch of lambda  after co_await ,crash!
-			//!!!or If u use catch of lambda and coroutine not start from the same thread(TO_MAIN in this sample),crash!
-			auto nPool = pool;
-			std::stringstream ss;
-			int r = 0;
-			if (r > 2) {
-				co_return true;
-			}
-			auto xx = std::make_unique<int>(2);
-			//auto xx = nicehero::make_copyable<int>(2);
-			auto r2 = co_await CoroAsyncXX5(std::move(xx),7);
-			(ss = std::stringstream()) << "co_await CoroAsyncXX5(2,7):" << *r2 << "\n";
-			res->write(ss.str());
-			auto cursor = co_await nicehero::MongoPoolFindAsync(nPool
-				, "x"
-				, NBSON("_id", BCON_INT32(1))
-				, nicehero::Bson::createBsonPtr()
-				, MONGOC_READ_PRIMARY);
-			nlog("co_await nicehero::MongoPoolFindAsync ok");
-			while (auto bobj = cursor->fetch()) {
-				res->write(bobj->toJson());
-			}
-			
-			if (r > 2) {
-				co_return true;
-			}
-			r += co_await async_add(1,3);
+		//!!!Must copy first ,if use the catch of lambda  after co_await ,crash!
+		//!!!or If u use catch of lambda and coroutine not start from the same thread(TO_MAIN in this sample),crash!
+		auto nPool = pool;
+		std::stringstream ss;
+		int r = 0;
+		if (r == 2) {
 			co_return true;
+		}
+		auto xx = std::make_unique<int>(2);
+		//auto xx = nicehero::make_copyable<int>(2);
+		auto r2 = co_await CoroAsyncXX5(std::move(xx),7);
+		(ss = std::stringstream()) << "co_await CoroAsyncXX5(2,7):" << *r2 << "\n";
+		res->write(ss.str());
+		auto cursor = co_await nicehero::MongoPoolFindAsync(nPool
+			, "x"
+			, NBSON("_id", BCON_INT32(1))
+			, nicehero::Bson::createBsonPtr()
+			, MONGOC_READ_PRIMARY);
+		nlog("co_await nicehero::MongoPoolFindAsync ok");
+		while (auto bobj = cursor->fetch()) {
+			res->write(bobj->toJson());
+		}
+		r += co_await async_add(1,3);
+
+		if (r > 2) {
+			co_return true;
+		}
+		co_return true;
 #else
 			return true;
 #endif
-	});
+	};
+	httpServer.addHandler("/", f);
 	httpServer.addHandler("/v2", [pool] HTTP_HANDLER_PARAMS
 		{
 			res->write("hello world v2:\n");
