@@ -3,6 +3,8 @@
 #include <thread>
 #include "Service.h"
 #include "Type.h"
+#include <mutex>
+#include <condition_variable>
 
 #if !defined(NICE_HAS_CO_AWAIT)
 # if !defined(NICE_DISABLE_CO_AWAIT)
@@ -43,6 +45,25 @@ namespace asio{
 }
 
 namespace nicehero {
+	class semaphore {
+	public:
+		semaphore(long count = 0) :count(count) {}
+		void wait() {
+			std::unique_lock<std::mutex>lock(mx);
+			cond.wait(lock, [&]() {return count > 0; });
+			--count;
+	}
+		void signal() {
+			std::unique_lock<std::mutex>lock(mx);
+			++count;
+			cond.notify_one();
+		}
+
+	private:
+		std::mutex mx;
+		std::condition_variable cond;
+		long count;
+	};
 #ifdef NICE_HAS_CO_AWAIT
 #if !__has_include(<experimental/coroutine>)
 #define STDCORO std
@@ -80,7 +101,7 @@ namespace nicehero {
 			}
 			auto final_suspend() noexcept {
 				//return suspend_if{ return_context != gCurrentService };
-				return suspend_never();
+				return suspend_never{};
 			}
 			auto get_return_object() {
 				return Task<R, executer, return_context>(this);
@@ -92,6 +113,9 @@ namespace nicehero {
 			template<typename U>
 			void return_value(U&& value) {
 				if (m_task) {
+					if (m_task->first_context != executer) {
+						m_semaphore.wait();
+					}
 					m_task->ret = std::move(value);
 					auto h = m_task->m_handle;
 					if (!h) {
@@ -122,6 +146,7 @@ namespace nicehero {
 			friend struct Task<R, executer, return_context>;
 		protected:
 			Task* m_task = nullptr;
+			semaphore m_semaphore;
 		};
 		bool await_ready() const {
 			return false;
@@ -143,6 +168,9 @@ namespace nicehero {
 				return;
 			}
 			m_handle = handle;
+			if (m_promise) {
+				m_promise->m_semaphore.signal();
+			}
 		}
 		Task(promise_type* p) {
 			m_promise = p;

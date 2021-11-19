@@ -6,13 +6,14 @@
 * Kcp Server and Client with auto encryption
 * Http Server
 * MongoDB (need run dep/buildmongoc.py to install driver and include Mongo.hpp)
-* Coroutine MongoDB method (need cmake -DCORO=on and include MongoAsync.hpp)
-* Support co_await by nicehero::Task<> (need cmake -DCORO=on)
+* Coroutine MongoDB method !(need cmake -DCORO=on and include MongoAsync.hpp)
+* Support co_await by nicehero::Task<> !(need cmake -DCORO=on) !(Only support one layer in current)
 * Better multi thread model and less context copy (Lock one session on same thread)
 * One main thread + 8 work thread + 8 mutli work thread + 16 db thread
 * Easy logging
 * Easy binary proto for Tcp&Kcp and use proto/ProtoJson2Hpp.py auto build hpp proto code by json file
 * Support ipv6
+
 
 ## how to install
 Need GNU 11+,if platform windows recommend WinLibs of MinGW64:https://winlibs.com/
@@ -83,7 +84,26 @@ int main()
 	return 0;
 }
 ```
-
+* ##### Warning: co_await in co_await coroutine is NOT ALLOWED!
+```c++
+    //This is error!
+    Task<...> a(...){
+        ...
+        co_return ...
+    }
+    Task<...> b(...){
+        ...
+        auto v = co_await a(...);
+        ...
+        co_return ...
+    }
+    Task<...> c(...){
+        ...
+        auto v = co_await b(...);
+        ...
+        co_return ...
+    }
+```
 ## how to make a http server
 ```c++
 #include <Service.h>

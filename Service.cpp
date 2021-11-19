@@ -72,7 +72,6 @@ void nicehero::start(bool background)
 
 void nicehero::stop()
 {
-	gService.stop();
 	for (int i = 0; i < WORK_THREAD_COUNT; ++i)
 	{
 		gWorkerServices[i].stop();
@@ -82,6 +81,7 @@ void nicehero::stop()
 	{
 		gDBServices[i].stop();
 	}
+	gService.stop();
 }
 
 void nicehero::post(std::function<void()> f, ToService to)

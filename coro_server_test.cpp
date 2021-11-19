@@ -15,6 +15,7 @@ class MyClient :public nicehero::TcpSessionS
 {
 public:
 	int recv101Num = 0;
+	int recvXDataNum = 0;
 };
 class MyServer :public nicehero::TcpServer
 {
@@ -151,16 +152,20 @@ int main(int argc, char* argv[])
 using namespace Proto;
 TCP_SESSION_COMMAND(MyClient, XDataID)
 {
+	MyClient& client = (MyClient&)*session.get();
 	XData d;
+	++client.recvXDataNum;
+
 	*msg >> d;
 	d.s1 = "xxxx";
 	std::string s;
 	s.assign(d.s2.m_Data.get(), d.s2.m_Size);
+	nlog("tcp recv XData size:%d,%s,%d", int(msg->getSize()), s.c_str(), client.recvXDataNum);
 #ifdef NICE_HAS_CO_AWAIT
-	int r = co_await async_add(2,3);
+	int r = co_await async_add(2, 3);
 	r += 1;
 #endif
-	nlog("tcp recv XData size:%d,%s", int(msg->getSize()), s.c_str());
+	nlog("tcp recv XData r:%d,%d", r, client.recvXDataNum);
 	session->sendMessage(d);
 	co_return true;
 }
@@ -172,9 +177,11 @@ TCP_SESSION_COMMAND(MyClient, 101)
 	++client.recv101Num;
 	nlog("recv101 recv101Num:%d", client.recv101Num);
 #ifdef NICE_HAS_CO_AWAIT
-	int r = co_await async_add(1,1);
+	auto a = async_add(1, 1);
+	int r = co_await a;
 	r += 1;
 #endif
+	nlog("recv101 r:%d", r);
 	co_return true;
 }
 static int numClients = 0;
@@ -185,24 +192,28 @@ TCP_SESSION_COMMAND(MyClient, 102)
 	++numClients;
 	nlog("tcp recv102 recv101Num:%d,%d", client.recv101Num,numClients);
 #ifdef NICE_HAS_CO_AWAIT
-	int r = co_await async_add(1, 1);
+	auto a = async_add(2, 3); 
+	int r = co_await a;
 	r += 1;
 #endif
+	nlog("recv102 r:%d,client.recv101Num", r, client.recv101Num);
 	co_return true;
 }
 
 KCP_SESSION_COMMAND(MyKcpSession, XDataID)
 {
-#ifdef NICE_HAS_CO_AWAIT
-	int r = co_await async_add(1, 1);
-	r += 1;
-#endif
 	XData d;
 	*msg >> d;
 	d.s1 = "xxxx";
 	std::string s;
 	s.assign(d.s2.m_Data.get(), d.s2.m_Size);
 	nlog("kcp recv XData size:%d,%s", int(msg->getSize()),s.c_str());
+#ifdef NICE_HAS_CO_AWAIT
+	auto a = async_add(1, 1);
+	int r = co_await a;
+	r += 1;
+#endif
+	nlog("kcp recv XData r:%d", r);
 	
 	session->sendMessage(d);
 	co_return true;
