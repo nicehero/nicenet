@@ -4,7 +4,7 @@
 #include <chrono>
 namespace nicehero
 {
-	struct timeval
+	struct ntimeval
 	{
 		time_t  tv_sec;         /* seconds */
 		long    tv_usec;        /* and microseconds */
@@ -20,7 +20,7 @@ namespace nicehero
 		ui64 getSeconds();
 		ui64 getMilliSeconds();
 
-		timeval	m_current;	
+		ntimeval m_current;
 		ui32 m_second;			
 		ui64 m_millisecond;	
 		ui64 m_currentMS;	

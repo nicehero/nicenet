@@ -28,7 +28,7 @@ namespace nicehero
 		return x.QuadPart;
 	}
 
-	int gettimeofday(struct timeval *tv, struct timezone *tz)
+	int gettimeofday(struct ntimeval *tv, struct timezone *tz)
 	{
 		LONGLONG now = systime();
 

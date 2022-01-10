@@ -67,5 +67,10 @@ else:
 	do_os("gcc -shared -fPIC -o lib/libikcp.so include/kcp/ikcp.c")
 do_os("rm -rf ikcp.o")
 
+print ('download json')
+do_os("wget https://gitee.com/nicehero/jsoncons/attach_files/939949/download/jsoncons-0.168.2.tar.gz")
+do_os("tar xvf jsoncons-0.168.2.tar.gz")
+do_os("mv jsoncons-0.168.2/include/* include/")
+
 do_os("echo 0.1 > done")
 print ('done')
