@@ -367,13 +367,11 @@ int main(int argc, char* argv[]) {
     int64_t idOffset = (argc >= 7) ? strtoll(argv[6], nullptr, 10) : 0;
 
     const char* envPwd = getenv("MYSQL_PWD");
-    std::string passwd = envPwd ? envPwd : "***REMOVED***";
-    // Override with cmdline env or just use the user's known password
-    // For security, the password can be set via MYSQL_PWD env var
-    // Here we hardcode per user's specification
     if (!envPwd) {
-        passwd = "***REMOVED***";  // provided by user
+        nlogerr("MYSQL_PWD environment variable must be set");
+        return 1;
     }
+    std::string passwd = envPwd;
 
     return runBenchmark(host, 3306, "root", passwd,
                         dbname, tablename, threadNum, totalOps, idOffset);
